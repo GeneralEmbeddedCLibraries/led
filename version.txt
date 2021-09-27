@@ -1,0 +1,22 @@
+============================================================
+ Version 1.0.0 (xx.xx.2021)
+============================================================
+ 
+ Brief:
+ - Initial release
+
+ Features: 
+ - Configuration via single table
+ - LED fading in/out
+ - Runtime configuration change   
+
+ Solved issues:
+ -
+
+ Known issues:
+ - 
+
+ Todo:
+ - 
+   
+============================================================
