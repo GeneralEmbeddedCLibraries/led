@@ -18,11 +18,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////
-#include "stm32f3xx_hal.h"
 #include "led.h"
 #include "drivers/peripheral/timer/timer.h"
-
-#include "middleware/parameters/parameters/src/par.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Definitions
@@ -110,8 +107,8 @@ typedef struct
 static led_t g_led[ eLED_NUM_OF ] =
 {
 	//	Initial duty	Max duty 			Fade time			Fade in factor 								Fade out factor								Period			Period time			On time 			Timer channel							Mode						Blink counter
-	{	.duty = 0.0f,	.max_duty = 1.0f,	.fade_time = 0.0f,	.fade_out_time = 1.0f, .fade_in_k = LED_FADE_IN_COEF_T_TO_DUTY, 	.fade_out_k = LED_FADE_OUT_COEF_T_TO_DUTY,	.period = 0.0f,	.per_time = 0.0f, 	.on_time = 0.0f, 	.tim_ch = eTIMER_TIM1_CH1_L_LED,	.mode = eLED_MODE_NORMAL, 	.blink_cnt = 0U	},
-	{	.duty = 0.0f,	.max_duty = 1.0f,	.fade_time = 0.0f,	.fade_out_time = 1.0f, .fade_in_k = LED_FADE_IN_COEF_T_TO_DUTY, 	.fade_out_k = LED_FADE_OUT_COEF_T_TO_DUTY,	.period = 0.0f,	.per_time = 0.0f, 	.on_time = 0.0f, 	.tim_ch = eTIMER_TIM1_CH2_R_LED,	.mode = eLED_MODE_NORMAL,	.blink_cnt = 0U	},
+	{	.duty = 0.0f,	.max_duty = 1.0f,	.fade_time = 0.0f,	.fade_out_time = 1.0f, .fade_in_k = LED_FADE_IN_COEF_T_TO_DUTY, 	.fade_out_k = LED_FADE_OUT_COEF_T_TO_DUTY,	.period = 0.0f,	.per_time = 0.0f, 	.on_time = 0.0f, 	.tim_ch = eTIMER_TIM3_CH1_LED_R,	.mode = eLED_MODE_NORMAL, 	.blink_cnt = 0U	},
+	{	.duty = 0.0f,	.max_duty = 1.0f,	.fade_time = 0.0f,	.fade_out_time = 1.0f, .fade_in_k = LED_FADE_IN_COEF_T_TO_DUTY, 	.fade_out_k = LED_FADE_OUT_COEF_T_TO_DUTY,	.period = 0.0f,	.per_time = 0.0f, 	.on_time = 0.0f, 	.tim_ch = eTIMER_TIM3_CH2_LED_G,	.mode = eLED_MODE_NORMAL,	.blink_cnt = 0U	},
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -195,12 +192,6 @@ void led_hndl(void)
 		// Manage LED timings
 		led_manage_time( i );
 	}
-
-	// Set parameters
-	par_set( ePAR_LED_L_PWM, &g_led[eLED_L].duty );
-	par_set( ePAR_LED_R_PWM, &g_led[eLED_R].duty );
-	par_set( ePAR_LED_L_ON_TIME, &g_led[eLED_L].active_time );
-	par_set( ePAR_LED_R_ON_TIME, &g_led[eLED_R].active_time );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
