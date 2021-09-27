@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <stdint.h>
 #include "project_config.h"
+#include "../../led_cfg.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Definitions
@@ -37,16 +38,6 @@ typedef enum
     eLED_ON         /**<LED on state */
 } led_state_t;
 
-/**
- *  LED
- */
-typedef enum
-{
-    eLED_L = 0,	/**<Left LED */
-    eLED_R,		/**<Right LED */
-
-    eLED_NUM_OF
-} led_num_t;
 
 /**
  *  Blink mode
