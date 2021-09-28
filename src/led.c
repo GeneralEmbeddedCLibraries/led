@@ -95,7 +95,7 @@ typedef struct
 	float32_t	per_time;		/**<Period time keeping */
 	float32_t	on_time;		/**<On time for blink mode */
 	float32_t 	active_time;	/**<LED active time - turned ON time */
-	timer_ch_t	tim_ch;			/**<Timer channel which drive LED */
+	//timer_ch_t	tim_ch;			/**<Timer channel which drive LED */
 	led_mode_t	mode;			/**<Current LED mode */
 	uint8_t		blink_cnt;		/**<Blink LED live counter */
 } led_t;
@@ -107,12 +107,12 @@ typedef struct
 /**
  * 	LED data
  */
-static led_t g_led[ eLED_NUM_OF ] =
-{
+static led_t g_led[ eLED_NUM_OF ] = { 0 };
+/*{
 	//	Initial duty	Max duty 			Fade time			Fade in factor 								Fade out factor								Period			Period time			On time 			Timer channel							Mode						Blink counter
 	{	.duty = 0.0f,	.max_duty = 1.0f,	.fade_time = 0.0f,	.fade_out_time = 1.0f, .fade_in_k = LED_FADE_IN_COEF_T_TO_DUTY, 	.fade_out_k = LED_FADE_OUT_COEF_T_TO_DUTY,	.period = 0.0f,	.per_time = 0.0f, 	.on_time = 0.0f, 	.tim_ch = eTIMER_TIM3_CH1_LED_R,	.mode = eLED_MODE_NORMAL, 	.blink_cnt = 0U	},
 	{	.duty = 0.0f,	.max_duty = 1.0f,	.fade_time = 0.0f,	.fade_out_time = 1.0f, .fade_in_k = LED_FADE_IN_COEF_T_TO_DUTY, 	.fade_out_k = LED_FADE_OUT_COEF_T_TO_DUTY,	.period = 0.0f,	.per_time = 0.0f, 	.on_time = 0.0f, 	.tim_ch = eTIMER_TIM3_CH2_LED_G,	.mode = eLED_MODE_NORMAL,	.blink_cnt = 0U	},
-};
+};*/
 
 /**
  * 	Initialization guard
@@ -137,6 +137,13 @@ static bool led_is_period_time		(const led_num_t num);
 static void led_blink_cnt_hndl		(const led_num_t num);
 static void led_manage_time			(const led_num_t num);
 
+static led_status_t led_check_drv_init	(void);
+static void led_set_gpio				(const led_num_t led_num, const float32_t duty, const float32_t duty_max);
+static void led_set_timer				(const led_num_t led_num, const float32_t duty);
+
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,7 +159,8 @@ static void led_manage_time			(const led_num_t num);
 ////////////////////////////////////////////////////////////////////////////////
 led_status_t led_init(void)
 {
-	led_status_t status = eLED_OK;
+	led_status_t 	status 	= eLED_OK;
+	led_num_t		num		= 0;
 
 	LED_ASSERT( false == gb_is_init );
 
@@ -163,7 +171,33 @@ led_status_t led_init(void)
 
 		if ( NULL != gp_cfg_table )
 		{
+			// Check low level drivers
+			if ( eLED_OK == led_check_drv_init())
+			{
+				// Set up live LED configuration
+				for ( num = 0; num < eLED_NUM_OF; num++ )
+				{
+					g_led[num].duty 			= 0.0f;
+					g_led[num].max_duty 		= 1.0f;
+					g_led[num].fade_time 		= 0.0f;
+					g_led[num].fade_in_k 		= LED_FADE_IN_COEF_T_TO_DUTY;
+					g_led[num].fade_out_k 		= LED_FADE_OUT_COEF_T_TO_DUTY;
+					g_led[num].fade_out_time 	= 1.0f;
+					g_led[num].period		 	= 0.0f;
+					g_led[num].per_time		 	= 0.0f;
+					g_led[num].on_time		 	= 0.0f;
+					g_led[num].active_time	 	= 0.0f;
+					g_led[num].mode			 	= eLED_MODE_NORMAL;
+					g_led[num].blink_cnt		= 0;
+				}
+			}
 
+			// Low level drivers not initialized
+			else
+			{
+				LED_ASSERT( 0 );
+				status = eLED_ERROR_INIT;
+			}
 		}
 		else
 		{
@@ -194,43 +228,58 @@ led_status_t led_hndl(void)
 	led_status_t status = eLED_OK;
 
 	// Loop through all LEDs
-	for ( uint8_t i = 0; i < eLED_NUM_OF; i++ )
+	for ( uint8_t led_num = 0; led_num < eLED_NUM_OF; led_num++ )
 	{
-		switch( g_led[i].mode )
+		switch( g_led[led_num].mode )
 		{
 			case eLED_MODE_NORMAL:
 				// No action...
 				break;
 
 			case eLED_MODE_FADE_IN:
-				led_fade_in_hndl( i, eLED_MODE_NORMAL );
+				led_fade_in_hndl( led_num, eLED_MODE_NORMAL );
 				break;
 
 			case eLED_MODE_FADE_OUT:
-				led_fade_out_hndl( i, eLED_MODE_NORMAL );
+				led_fade_out_hndl( led_num, eLED_MODE_NORMAL );
 				break;
 
 			case eLED_MODE_BLINK:
-				led_blink_hndl( i );
+				led_blink_hndl( led_num );
 				break;
 
 			case eLED_MODE_FADE_BLINK:
-				led_fade_blink_hndl( i );
+				led_fade_blink_hndl( led_num );
 				break;
 
 			default:
-				PROJECT_CONFIG_ASSERT( 0 );
+				LED_ASSERT( 0 );
 				break;
 		}
 
-		// Setup timer
-		timer_set_pwm( g_led[i].tim_ch, g_led[i].duty );
+		// Set timer
+		if ( eLED_DRV_TIMER_PWM == gp_cfg_table[led_num].drv_type )
+		{
+			led_set_timer( led_num, g_led[led_num].duty );
+		}
+
+		// Set GPIO
+		else if ( eLED_DRV_GPIO == gp_cfg_table[led_num].drv_type  )
+		{
+			led_set_gpio( led_num, g_led[led_num].duty, g_led[led_num].max_duty );
+		}
+
+		// Unknown driver
+		else
+		{
+			LED_ASSERT( 0 );
+		}
 
 		// Manage period time
-		led_hndl_period_time( i );
+		led_hndl_period_time( led_num );
 
 		// Manage LED timings
-		led_manage_time( i );
+		led_manage_time( led_num );
 	}
 
 	return status;
@@ -658,6 +707,119 @@ static void led_blink_cnt_hndl(const led_num_t num)
 			}
 		}
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*   	Check that low level drivers are initialized
+*
+* @return   	status - Status of low level initialization
+*/
+////////////////////////////////////////////////////////////////////////////////
+static led_status_t led_check_drv_init(void)
+{
+	led_status_t 	status = eLED_OK;
+
+	#if ( 1 == LED_CFG_TIMER_USE_EN )
+
+		bool tim_drv_init = false;
+
+		// Get init flag
+		timer_is_init( &tim_drv_init );
+
+		if ( false == tim_drv_init )
+		{
+			status |= eLED_ERROR_INIT;
+		}
+
+	#endif
+
+	#if ( 1 == LED_CFG_GPIO_USE_EN )
+
+		bool gpio_drv_init = false;
+
+		// Get init flag
+		gpio_is_init( &gpio_drv_init );
+
+		if ( false == gpio_drv_init )
+		{
+			status |= eLED_ERROR_INIT;
+		}
+
+	#endif
+
+	return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*   	Set LED via GPIO driver
+*
+*  @note	Based on duty cycle LED GPIO state is being determine!
+*
+* @param[in]	led_num		- Number of LED
+* @param[in]	duty		- Current duty of LED
+* @param[in]	max_duty	- Maximum duty of LED
+* @return   	void
+*/
+////////////////////////////////////////////////////////////////////////////////
+static void led_set_gpio(const led_num_t led_num, const float32_t duty, const float32_t duty_max)
+{
+	#if ( 1 == LED_CFG_GPIO_USE_EN )
+		gpio_state_t state = eGPIO_LOW;
+
+		if ( duty >= duty_max )
+		{
+			if ( eLED_POL_ACTIVE_LOW == gp_cfg_table[led_num].polarity )
+			{
+				state = eGPIO_LOW;
+			}
+			else
+			{
+				state = eGPIO_HIGH;
+			}
+		}
+		else
+		{
+			if ( eLED_POL_ACTIVE_LOW == gp_cfg_table[led_num].polarity )
+			{
+				state = eGPIO_HIGH;
+			}
+			else
+			{
+				state = eGPIO_LOW;
+			}
+		}
+
+		// Set GPIO
+		gpio_set( gp_cfg_table[led_num].drv_ch.gpio_pin, state );
+	#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*   	Set led via TIMER driver
+*
+* @param[in]	led_num		- Number of LED
+* @param[in]	duty		- Current duty of LED
+* @return   	void
+*/
+////////////////////////////////////////////////////////////////////////////////
+static void led_set_timer(const led_num_t led_num, const float32_t duty)
+{
+	#if ( 1 == LED_CFG_TIMER_USE_EN )
+		float32_t tim_duty = duty;
+
+		// Apply polarity
+		if ( eLED_POL_ACTIVE_LOW == gp_cfg_table[led_num].polarity )
+		{
+			tim_duty = ( 1.0 - duty );
+		}
+
+		// Set timer PWM
+		timer_set_pwm( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
+
+	#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

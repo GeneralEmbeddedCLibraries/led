@@ -59,6 +59,15 @@ typedef enum
 } led_state_t;
 
 /**
+ * 	LED active polarity
+ */
+typedef enum
+{
+	eLED_POL_ACTIVE_HIGH = 0,
+	eLED_POL_ACTIVE_LOW,
+} led_polarity_t;
+
+/**
  *  Blink mode
  */
 typedef enum
@@ -99,7 +108,7 @@ typedef union
 
 } led_drv_ch_t;
 
-/**
+/**s
  * 	LED configuration
  */
 typedef struct
@@ -107,6 +116,7 @@ typedef struct
 	led_drv_t 		drv_type;		/**<LED driver type */
 	led_drv_ch_t	drv_ch;			/**<LED driver channel */
 	led_state_t		initial_state;	/**<Initial state of LED */
+	led_polarity_t	polarity;		/**<LED active polarity */
 } led_cfg_t;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -60,7 +60,8 @@ typedef enum
 {
 	// USER CODE START...
 
-    eLED_R = 0,
+	eLED_DEBUG = 0,
+    eLED_R,
     eLED_G,
 
 	// USER CODE END...
@@ -79,7 +80,7 @@ typedef enum
 /**
  * 	Using GPIO for driving LED
  */
-#define LED_CFG_GPIO_USE_EN						( 0 )
+#define LED_CFG_GPIO_USE_EN						( 1 )
 
 /**
  * 	Enable/Disable debug mode

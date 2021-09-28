@@ -55,11 +55,12 @@ static const led_cfg_t g_led_cfg[ eLED_NUM_OF ] =
 
 	// USER CODE BEGIN...
 
-	// ----------------------------------------------------------------------------------------------------------------------------------
-	//	Driver type							LED driver channel							Initial State
-	// ----------------------------------------------------------------------------------------------------------------------------------
-	{ 	.drv_type = eLED_DRV_TIMER_PWM,		.drv_ch.tim_ch = eTIMER_TIM3_CH1_LED_R,		.initial_state = eLED_ON 						},
-	{ 	.drv_type = eLED_DRV_TIMER_PWM,		.drv_ch.tim_ch = eTIMER_TIM3_CH2_LED_G,		.initial_state = eLED_OFF						},
+	// -------------------------------------------------------------------------------------------------------------------------------------------------------
+	//	Driver type							LED driver channel							Initial State					Polarity
+	// -------------------------------------------------------------------------------------------------------------------------------------------------------
+	{ 	.drv_type = eLED_DRV_GPIO,			.drv_ch.gpio_pin = eGPIO_DEBUG_LED,			.initial_state = eLED_ON, 		.polarity = eLED_POL_ACTIVE_HIGH	},
+	{ 	.drv_type = eLED_DRV_TIMER_PWM,		.drv_ch.tim_ch = eTIMER_TIM3_CH1_LED_R,		.initial_state = eLED_ON, 		.polarity = eLED_POL_ACTIVE_HIGH	},
+	{ 	.drv_type = eLED_DRV_TIMER_PWM,		.drv_ch.tim_ch = eTIMER_TIM3_CH2_LED_G,		.initial_state = eLED_OFF,		.polarity = eLED_POL_ACTIVE_HIGH	},
 
 
 	// USER CODE END...
