@@ -108,7 +108,7 @@ typedef union
 
 } led_drv_ch_t;
 
-/**s
+/**
  * 	LED configuration
  */
 typedef struct
@@ -119,24 +119,35 @@ typedef struct
 	led_polarity_t	polarity;		/**<LED active polarity */
 } led_cfg_t;
 
+#if ( 1 == LED_CFG_TIMER_USE_EN )
+
+	/**
+	 * 	LED fade configuration
+	 */
+	typedef struct
+	{
+		float32_t fade_in_time;		/**<Fade in time */
+		float32_t fade_out_time;		/**<Fade out time */
+		float32_t max_duty;		/**<Maximum duty cycle */
+	} led_fade_cfg_t;
+
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // Functions
 ////////////////////////////////////////////////////////////////////////////////
-led_status_t	led_init   			(void);
-led_status_t	led_is_init   		(bool * const p_is_init);
-led_status_t 	led_hndl			(void);
-
-led_status_t 	led_set    			(const led_num_t num, const led_state_t state);
-led_status_t 	led_blink			(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
+led_status_t led_init   		(void);
+led_status_t led_is_init		(bool * const p_is_init);
+led_status_t led_hndl			(void);
+led_status_t led_set    		(const led_num_t num, const led_state_t state);
+led_status_t led_blink			(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
+led_status_t led_get_active_time(const led_num_t num, float32_t * const p_active_time);
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
-	led_status_t 	led_set_smooth		(const led_num_t num, const led_state_t state);
-	led_status_t 	led_blink_smooth	(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
+	led_status_t led_set_smooth		(const led_num_t num, const led_state_t state);
+	led_status_t led_blink_smooth	(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
+	led_status_t led_set_fade_cfg	(const led_num_t num, const led_fade_cfg_t * const p_fade_cfg);
 #endif
-
-
-/*void 		led_set_cfg			(const led_num_t num, const float32_t fade_in_time, const float32_t fade_out_time, const float32_t max_duty);
-float32_t	led_get_active_time	(const led_num_t num);*/
 
 #endif // __LED_H_
 ////////////////////////////////////////////////////////////////////////////////
