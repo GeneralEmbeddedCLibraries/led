@@ -43,10 +43,6 @@
  *				1. GPIO
  *				2. Timer PWM
  *
- *			Insert NULL pointer for functions that are not being used!
- *			E.g. if using GPIO insert NULL for timer PWM driver function
- *			pointer and again same if using timer.
- *
  *
  * 	@note 	Low level gpio and timer code must be compatible!
  */

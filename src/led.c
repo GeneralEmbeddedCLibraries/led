@@ -11,7 +11,7 @@
 */
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @addtogroup LED_API
+ * @addtogroup LED
  * @{ <!-- BEGIN GROUP -->
  */
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@
 /**
  * 	 Default fading factor
  *
- * 	 @Note Times two is becase of x^2 derivative is 2x
+ * 	 @note Times two is becase of x^2 derivative is 2x
  *
  * 	 Unit: duty [0-1.0]
  */
@@ -438,12 +438,12 @@ static led_status_t led_check_drv_init(void)
 * @return   	void
 */
 ////////////////////////////////////////////////////////////////////////////////
-static void led_set_gpio(const led_num_t led_num, const float32_t duty, const float32_t duty_max)
+static void led_set_gpio(const led_num_t led_num, const float32_t duty, const float32_t max_duty)
 {
 	#if ( 1 == LED_CFG_GPIO_USE_EN )
 		gpio_state_t state = eGPIO_LOW;
 
-		if ( duty >= duty_max )
+		if ( duty >= max_duty )
 		{
 			if ( eLED_POL_ACTIVE_LOW == gp_cfg_table[led_num].polarity )
 			{
@@ -512,18 +512,18 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
 * @return   	void
 */
 ////////////////////////////////////////////////////////////////////////////////
-static void	led_set_low(const led_num_t led_num, const float32_t duty, const float32_t duty_max)
+static void	led_set_low(const led_num_t led_num, const float32_t duty, const float32_t max_duty)
 {
 	// Set timer
 	if ( eLED_DRV_TIMER_PWM == gp_cfg_table[led_num].drv_type )
 	{
-		led_set_timer( led_num, g_led[led_num].duty );
+		led_set_timer( led_num, duty );
 	}
 
 	// Set GPIO
 	else if ( eLED_DRV_GPIO == gp_cfg_table[led_num].drv_type  )
 	{
-		led_set_gpio( led_num, g_led[led_num].duty, g_led[led_num].max_duty );
+		led_set_gpio( led_num, duty, max_duty );
 	}
 
 	// Unknown driver
@@ -552,7 +552,7 @@ static void	led_set_low(const led_num_t led_num, const float32_t duty, const flo
 /**
 *   Initialise LEDs
 *
-*@precondition Timers shall be initialised before
+* @pre 	Timers/GPIO shall be initialised before
 *
 * @return   status	- Status of initialisation
 */
