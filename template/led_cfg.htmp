@@ -73,6 +73,12 @@ typedef enum
 // USER CODE BEGIN...
 
 /**
+ * 	Main LED handler period
+ * 	Unit: sec
+ */
+#define LED_CFG_HNDL_PERIOD_S					( 0.01f )
+
+/**
  * 	Using timer for driving LED
  */
 #define LED_CFG_TIMER_USE_EN					( 1 )
