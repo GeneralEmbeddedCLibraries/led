@@ -574,6 +574,9 @@ led_status_t led_init(void)
 			// Check low level drivers
 			if ( eLED_OK == led_check_drv_init())
 			{
+				// Set init success
+				gb_is_init = true;
+
 				// Set up live LED configuration
 				for ( num = 0; num < eLED_NUM_OF; num++ )
 				{
@@ -594,9 +597,6 @@ led_status_t led_init(void)
 					led_set( num, gp_cfg_table[num].initial_state );
 					led_set_low( num, g_led[num].duty, g_led[num].max_duty );
 				}
-
-				// Set init success
-				gb_is_init = true;
 			}
 
 			// Low level drivers not initialised
@@ -716,6 +716,49 @@ led_status_t led_set(const led_num_t num, const led_state_t state)
 			else
 			{
 				g_led[num].duty = 0.0f;
+			}
+		}
+		else
+		{
+			status = eLED_ERROR;
+		}
+	}
+	else
+	{
+		status = eLED_ERROR_INIT;
+	}
+
+	return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*   	Toggle LED
+*
+* @param[in]	num 	- LED enumeration number
+* @return   	status	- Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_toggle(const led_num_t num)
+{
+	led_status_t status = eLED_OK;
+
+	LED_ASSERT( true == gb_is_init );
+	LED_ASSERT( num < eLED_NUM_OF );
+
+	if ( true == gb_is_init )
+	{
+		if ( num < eLED_NUM_OF )
+		{
+			g_led[num].mode = eLED_MODE_NORMAL;
+
+			if ( g_led[num].duty >= g_led[num].max_duty )
+			{
+				g_led[num].duty = 0.0f;
+			}
+			else
+			{
+				g_led[num].duty = g_led[num].max_duty ;
 			}
 		}
 		else
