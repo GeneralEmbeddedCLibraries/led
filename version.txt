@@ -1,0 +1,24 @@
+============================================================
+ Version 1.0.0 (29.09.2021)
+============================================================
+ 
+ Brief:
+ - Initial release
+
+ Features: 
+ - Configuration via single table
+ - LED fading in/out
+ - Runtime fading configuration change
+ - Support GPIO and timer PWM low level driver
+
+ Solved issues:
+ -
+
+ Known issues:
+ - 
+
+ Todo:
+ - Separate peripheral level (timer & gpio) to interface
+   file
+   
+============================================================
