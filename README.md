@@ -38,6 +38,13 @@ For library version V1.0.0 GPIO or/and timer PWM translation unit must be under 
 #endif
 ```
 
+Additional definition of float32_t must be provided by user. In current implementation it is defined in "project_config.h". Just add following statement to your code where it suits the best.
+
+```C
+// Define float
+typedef float float32_t;
+```
+
 
  ## **API**
 ---
