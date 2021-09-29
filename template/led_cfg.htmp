@@ -63,6 +63,7 @@ typedef enum
 	eLED_DEBUG = 0,
     eLED_R,
     eLED_G,
+	eLED_LCD,
 
 	// USER CODE END...
 
