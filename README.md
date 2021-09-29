@@ -1,7 +1,9 @@
-# LED 
-General C library for LED manipulation for human-machine interface. LED library is easily configurable via single configuration table. 
+# **LED library** 
+General C library for LED manipulation for human-machine interface. It support simple turning LEDs ON/OFF, turning ON/OFF with fading, blinking with and without fading. 
 
-## Dependencies
+Library must have either GPIO or timer PWM low level code support in order to manipulate with LEDs. Library by itself only takes care of timing, fading, blinking functionalities. Complete setup of library is condensed into single configuration table.
+
+## **Dependencies**
 ---
 Depents on what kind of low level driver is being used for driving LED. Two low level driver are supported. Based on configurations following function definitions must be vissible to LED module:
  - **GPIO**
@@ -25,15 +27,27 @@ Make sure to properly set configurations inside **led_cfg.h**:
 #define LED_CFG_GPIO_USE_EN						( 1 )
 ```
 
+For library version V1.0.0 GPIO or/and timer PWM translation unit must be under following project path:
+```C
+#if ( 1 == LED_CFG_TIMER_USE_EN )
+	#include "drivers/peripheral/timer/timer.h"
+#endif
 
- ## API
+#if ( 1 == LED_CFG_GPIO_USE_EN )
+	#include "drivers/peripheral/gpio/gpio.h"
+#endif
+```
+
+
+ ## **API**
 ---
 | API Functions | Description | Prototype |
 | --- | ----------- | ----- |
-| **led_init** | Initialization of LED | led_status_t led_init(void) |
+| **led_init** | Initialization of LED | led_status_t led_init(void) |****
 | **led_is_init** | Get initialization flag | led_status_t 	led_is_init(bool * const p_is_init) |
 | **led_hndl** | Main LED handler | led_status_t led_hndl(void) |
 | **led_set** | Set LED state | led_status_t led_set(const led_num_t num, const led_state_t state) |
+| **led_toggle** | Toggle LED state | led_status_t led_toggle(const led_num_t num) |
 | **led_blink** | Blink LED | led_status_t led_blink(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink |
 | **led_get_active_time** | Get LED ON time | led_status_t led_get_active_time(const led_num_t num, float32_t * const p_active_time)|
 
@@ -45,7 +59,7 @@ Enabled only if using timer PWM as low level driver:
 | **led_blink_smooth** | Blink LED with fading | led_status_t led_blink_smooth (const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink) |
 | **led_set_fade_cfg** | Set LED fading configurations | led_status_t led_set_fade_cfg	(const led_num_t num, const led_fade_cfg_t * const p_fade_cfg) |
 
-## How to use
+## **How to use**
 ---
 
 1. List all LEDs inside **led_cfg.h** file:
@@ -124,7 +138,10 @@ static const led_cfg_t g_led_cfg[ eLED_NUM_OF ] =
 
 };
 ```
-4. Include, initialize & start:
+4. Include, initialize & handle:
+
+Main LED handler **led_hndl()** must be called with a fixed period of **LED_CFG_HNDL_PERIOD_S** (defined inside led_cfg.h) in order to produce nice fading/effects. 
+
 ```C
 // Include single file to your application!
 #include "led.h"
@@ -153,6 +170,7 @@ led_set( eLED_DEBUG, eLED_ON );
 led_set( eLED_DEBUG, eLED_OFF );
 
 // Blink LED continously wiht period of 1 sec, 0.5 sec ON
+// NOTE: Single call of this function will cause blinking continously by led_hndl()
 led_blink( eLED_DEBUG, 0.5f, 1.0f, eLED_BLINK_CONTINUOUS );
 
 ```
