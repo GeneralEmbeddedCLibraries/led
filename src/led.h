@@ -40,6 +40,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * 	Module version
+ */
+#define LED_VER_MAJOR		( 1 )
+#define LED_VER_MINOR		( 0 )
+#define LED_VER_DEVELOP		( 0 )
+
+/**
  * 	LED status
  */
 typedef enum
