@@ -626,6 +626,30 @@ led_status_t led_init(void)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+*   Get LED initialisation flag
+*
+* @param[out]	p_is_init 	- Initialisation flag
+* @return   	status		- Status of initialisation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_is_init(bool * const p_is_init)
+{
+	led_status_t status = eLED_OK;
+
+	if ( NULL != p_is_init )
+	{
+		*p_is_init = gb_is_init;
+	}
+	else
+	{
+		status = eLED_ERROR;
+	}
+
+	return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
 *   LED handler
 *
 * @return   status	- Status of operation
