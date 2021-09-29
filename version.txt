@@ -1,4 +1,28 @@
 ============================================================
+ Version 1.0.1 (xx.xx.2021)
+============================================================
+ 
+ Brief:
+ - Adding functionalities
+ - Fixing bugs
+
+ Features: 
+ - Added implementation of get init flag function
+
+ Solved issues:
+ -
+
+ Known issues:
+ - 
+
+ Todo:
+ - Separate peripheral level (timer & gpio) to interface
+   file
+   
+============================================================
+
+
+============================================================
  Version 1.0.0 (29.09.2021)
 ============================================================
  
