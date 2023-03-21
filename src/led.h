@@ -46,6 +46,9 @@
 #define LED_VER_MINOR		( 0 )
 #define LED_VER_DEVELOP		( 0 )
 
+// Float definition
+typedef float float32_t;
+
 /**
  * 	LED status
  */
