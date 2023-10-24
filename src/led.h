@@ -32,7 +32,7 @@
 #endif
 
 #if ( 1 == LED_CFG_GPIO_USE_EN )
-	#include "drivers/peripheral/gpio/gpio.h"
+	#include "drivers/peripheral/gpio/gpio/src/gpio.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ typedef union
 	#endif
 
 	#if ( 1 == LED_CFG_GPIO_USE_EN )
-		gpio_pins_t gpio_pin;
+		gpio_pin_t gpio_pin;
 	#endif
 
 } led_drv_ch_t;
