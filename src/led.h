@@ -28,11 +28,11 @@
 #include "../../led_cfg.h"
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
-	#include "drivers/peripheral/timer/timer.h"
+	//#include "drivers/peripheral/timer/timer.h"
 #endif
 
 #if ( 1 == LED_CFG_GPIO_USE_EN )
-	#include "drivers/peripheral/gpio/gpio/src/gpio.h"
+	//#include "drivers/peripheral/gpio/gpio/src/gpio.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ typedef enum
 } led_blink_t;
 
 /**
- * 	LED driver
+ * 	LED low level driver options
  */
 typedef enum
 {
@@ -101,32 +101,45 @@ typedef enum
 	eLED_DRV_TIMER_PWM,		/**<Timer PWM LED Driver */
 
 	eLED_DRV_NUM_OF
-} led_drv_t;
+} led_ll_drv_opt_t;
 
 /**
- * 	LED driver channel
+ *  LED low level driver pointer function
+ */
+typedef void (*pf_led_gpio_set)     (const uint8_t state); 
+typedef void (*pf_led_tim_pwm_set)  (const float32_t duty); 
+
+/**
+ * 	LED low level driver
  */
 typedef union
 {
 	#if ( 1 == LED_CFG_TIMER_USE_EN )
-		timer_ch_t tim_ch;
+		pf_led_tim_pwm_set  pf_timer_pwm_set;
 	#endif
 
 	#if ( 1 == LED_CFG_GPIO_USE_EN )
-		gpio_pin_t gpio_pin;
+		pf_led_gpio_set     pf_gpio_set;
 	#endif
 
-} led_drv_ch_t;
+} led_ll_drv_t;
 
 /**
  * 	LED configuration
  */
 typedef struct
-{
-	led_drv_t 		drv_type;		/**<LED driver type */
-	led_drv_ch_t	drv_ch;			/**<LED driver channel */
-	led_state_t		initial_state;	/**<Initial state of LED */
-	led_polarity_t	polarity;		/**<LED active polarity */
+{   
+    /**
+     *  Low level driver 
+     */
+    struct
+    {
+        led_ll_drv_opt_t    type;           /**<LL driver type */
+        led_ll_drv_t        func;			/**<LL driver function */
+	} ll_drv;
+        
+    led_state_t         initial_state;	/**<Initial state of LED */
+	led_polarity_t      polarity;		/**<LED active polarity */
 } led_cfg_t;
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
