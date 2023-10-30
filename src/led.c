@@ -887,6 +887,52 @@ led_status_t led_get_active_time(const led_num_t num, float32_t * const p_active
 	return status;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/**
+*   	Is LED in idle state
+*
+* @brief    Get if LED is in idle state, meaning that it no longer blinks!
+*
+* @param[in]	num			- LED number
+* @param[out]	p_is_idle   - Is LED in idle state
+* @return   	status		- Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
+{
+	led_status_t status = eLED_OK;
+
+	LED_ASSERT( true == gb_is_init );
+	LED_ASSERT( num < eLED_NUM_OF );
+	LED_ASSERT( NULL != p_is_idle );
+
+	if ( true == gb_is_init )
+	{
+		if 	(	( num < eLED_NUM_OF )
+			&& 	( NULL != p_is_idle ))
+		{
+			if ( eLED_MODE_NORMAL == g_led[num].mode )
+            {
+                *p_is_idle = true;
+            }
+            else
+            {
+                *p_is_idle = false;
+            }
+		}
+		else
+		{
+			status = eLED_ERROR;
+		}
+	}
+	else
+	{
+		status = eLED_ERROR_INIT;
+	}
+
+	return status;    
+}
+
 #if ( 1 == LED_CFG_TIMER_USE_EN )
 
 	////////////////////////////////////////////////////////////////////////////////
