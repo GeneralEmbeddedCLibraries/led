@@ -398,10 +398,7 @@ static led_status_t led_check_drv_init(void)
 
 	#if ( 1 == LED_CFG_TIMER_USE_EN )
 
-
-    // TODO: Shall we check for init?????
-
-	/*	bool tim_drv_init = false;
+		bool tim_drv_init = false;
 
 		// Get init flag
 		timer_is_init( &tim_drv_init );
@@ -410,7 +407,6 @@ static led_status_t led_check_drv_init(void)
 		{
 			status |= eLED_ERROR_INIT;
 		}
-*/
 
 	#endif
 
@@ -502,8 +498,7 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
 		}
 
 		// Set timer PWM
-		//timer_set_pwm( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
-        gp_cfg_table[led_num].ll_drv.func.pf_timer_pwm_set( tim_duty );
+		timer_pwm_set( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
 
 	#endif
 }
@@ -521,13 +516,13 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
 static void	led_set_low(const led_num_t led_num, const float32_t duty, const float32_t max_duty)
 {
 	// Set timer
-	if ( eLED_DRV_TIMER_PWM == gp_cfg_table[led_num].ll_drv.type )
+	if ( eLED_DRV_TIMER_PWM == gp_cfg_table[led_num].drv_type )
 	{
 		led_set_timer( led_num, duty );
 	}
 
 	// Set GPIO
-	else if ( eLED_DRV_GPIO == gp_cfg_table[led_num].ll_drv.type  )
+	else if ( eLED_DRV_GPIO == gp_cfg_table[led_num].drv_type )
 	{
 		led_set_gpio( led_num, duty, max_duty );
 	}
