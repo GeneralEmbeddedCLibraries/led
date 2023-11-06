@@ -24,11 +24,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <stdint.h>
 #include <stdbool.h>
-#include "project_config.h"
 #include "../../led_cfg.h"
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
-	#include "drivers/peripheral/timer/timer/timer.h"
+	#include "drivers/peripheral/timer/timer/src/timer.h"
 #endif
 
 #if ( 1 == LED_CFG_GPIO_USE_EN )
