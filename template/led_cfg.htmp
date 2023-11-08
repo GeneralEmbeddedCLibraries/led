@@ -1,4 +1,4 @@
-// Copyright (c) 2021 Ziga Miklosic
+// Copyright (c) 2023 Ziga Miklosic
 // All Rights Reserved
 // This software is under MIT licence (https://opensource.org/licenses/MIT)
 ////////////////////////////////////////////////////////////////////////////////
@@ -6,8 +6,9 @@
 * @file     led_cfg.h
 * @brief    LED configurations
 * @author   Ziga Miklosic
-* @date     27.09.2021
-* @version	V1.0.0
+* @email    ziga.miklosic@gmail.com
+* @date     08.11.2023
+* @version  V1.1.0
 */
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -15,12 +16,10 @@
 * @{ <!-- BEGIN GROUP -->
 *
 *
-* 	Configuration for LED
+*     Configuration for LED
 *
-* 	User shall put code inside inside code block start with
-* 	"USER_CODE_BEGIN" and with end of "USER_CODE_END".
-*
-*
+*     User shall put code inside inside code block start with
+*     "USER_CODE_BEGIN" and with end of "USER_CODE_END".
 */
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,115 +33,173 @@
 
 // USER CODE BEGIN...
 
-#include "project_config.h"
-
-// Debug communication port
-#include "middleware/debug_comm_port/com_dbg.h"
+#include "config/proj_cfg.h"
+#include "middleware/cli/cli/src/cli.h"
 
 // USER CODE END...
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Definitions
 ////////////////////////////////////////////////////////////////////////////////
 
-
 /**
- * 	List of LEDs
+ *     List of LEDs
  *
- * @note 	User shall provide LED name here as it would be using
- * 			later inside code.
+ * @note    User shall provide LED name here as it would be using
+ *          later inside code.
  *
- * @note 	User shall change code only inside section of "USER_CODE_BEGIN"
- * 			ans "USER_CODE_END".
+ * @note    User shall change code only inside section of "USER_CODE_BEGIN"
+ *          and "USER_CODE_END".
  */
 typedef enum
 {
-	// USER CODE START...
+    // USER CODE START...
 
-	eLED_DEBUG = 0,
-    eLED_R,
-    eLED_G,
-	eLED_LCD,
+    eLED_STATUS = 0,    /**<General status indicator */
+    eLED_ERR_COM,       /**<Error communication indicator */
 
-	// USER CODE END...
+    // USER CODE END...
 
-	eLED_NUM_OF
+    eLED_NUM_OF
 } led_num_t;
 
 
 // USER CODE BEGIN...
 
 /**
- * 	Main LED handler period
- * 	Unit: sec
+ *     Main LED handler period
+ *     Unit: sec
  */
-#define LED_CFG_HNDL_PERIOD_S					( 0.01f )
+#define LED_CFG_HNDL_PERIOD_S                   ( 0.01f )
 
 /**
- * 	Using timer for driving LED
+ *     Using timer for driving LED
  */
-#define LED_CFG_TIMER_USE_EN					( 1 )
+#define LED_CFG_TIMER_USE_EN                    ( 0 )
 
 /**
- * 	Using GPIO for driving LED
+ *     Using GPIO for driving LED
  */
-#define LED_CFG_GPIO_USE_EN						( 1 )
+#define LED_CFG_GPIO_USE_EN                     ( 1 )
 
 /**
- * 	Enable/Disable debug mode
+ *     Enable/Disable debug mode
  *
- * 	@note Disabled in release!
+ *     @note Disabled in release!
  */
-#define LED_CFG_DEBUG_EN						( 1 )
+#define LED_CFG_DEBUG_EN                        ( 1 )
 #ifndef DEBUG
-	#undef LED_CFG_DEBUG_EN
-	#define LED_CFG_DEBUG_EN	( 0 )
+    #undef LED_CFG_DEBUG_EN
+    #define LED_CFG_DEBUG_EN    ( 0 )
 #endif
 
 /**
- * 	Enable/Disable assertions
+ *     Enable/Disable assertions
  *
- * 	@note Disabled in release!
+ *     @note Disabled in release!
  */
-#define LED_CFG_ASSERT_EN						( 1 )
+#define LED_CFG_ASSERT_EN                       ( 1 )
 #ifndef DEBUG
-	#undef LED_CFG_ASSERT_EN
-	#define LED_CFG_ASSERT_EN	( 0 )
+    #undef LED_CFG_ASSERT_EN
+    #define LED_CFG_ASSERT_EN    ( 0 )
 #endif
 
 /**
- * 	Debug communication port macros
+ *     Debug communication port macros
  */
 #if ( 1 == LED_CFG_DEBUG_EN )
-	#define LED_DBG_PRINT( ... )				( com_dbg_print( eCOM_DBG_CH_NONE, (const char*) __VA_ARGS__ ))
+    #define LED_DBG_PRINT( ... )                ( cli_printf( __VA_ARGS__ ))
 #else
-	#define LED_DBG_PRINT( ... )				{ ; }
+    #define LED_DBG_PRINT( ... )                { ; }
 
 #endif
 
 /**
- * 	 Assertion macros
+ *      Assertion macros
  */
 #if ( 1 == LED_CFG_ASSERT_EN )
-	#define LED_ASSERT(x)						PROJECT_CONFIG_ASSERT(x)
+    #define LED_ASSERT(x)                       PROJ_CFG_ASSERT(x)
 #else
-	#define LED_ASSERT(x)						{ ; }
+    #define LED_ASSERT(x)                       { ; }
 #endif
 
 // USER CODE END...
 
+
+#if ( 1 == LED_CFG_TIMER_USE_EN )
+    #include "drivers/peripheral/timer/timer/src/timer.h"
+#endif
+
+#if ( 1 == LED_CFG_GPIO_USE_EN )
+    #include "drivers/peripheral/gpio/gpio/src/gpio.h"
+#endif
+
 /**
- * 	Faulty configurations check
+ *     LED low level driver options
+ */
+typedef enum
+{
+    eLED_DRV_GPIO = 0,      /**<Simple GPIO LED Driver */
+    eLED_DRV_TIMER_PWM,     /**<Timer PWM LED Driver */
+
+    eLED_DRV_NUM_OF
+} led_ll_drv_opt_t;
+
+/**
+ *     LED low level driver channel
+ */
+typedef union
+{
+    #if ( 1 == LED_CFG_TIMER_USE_EN )
+        timer_ch_t tim_ch;
+    #endif
+
+    #if ( 1 == LED_CFG_GPIO_USE_EN )
+        gpio_pin_t gpio_pin;
+    #endif
+
+} led_drv_ch_t;
+
+/**
+ *  LED state
+ */
+typedef enum
+{
+    eLED_OFF = 0,   /**<LED off state */
+    eLED_ON         /**<LED on state */
+} led_state_t;
+
+/**
+ *     LED active polarity
+ */
+typedef enum
+{
+    eLED_POL_ACTIVE_HIGH = 0,
+    eLED_POL_ACTIVE_LOW,
+} led_polarity_t;
+
+/**
+ *     LED configuration
+ */
+typedef struct
+{
+    led_ll_drv_opt_t    drv_type;       /**<LED driver type */
+    led_drv_ch_t        drv_ch;         /**<LED driver channel */
+    led_state_t         initial_state;  /**<Initial state of LED */
+    led_polarity_t      polarity;       /**<LED active polarity */
+} led_cfg_t;
+
+/**
+ *     Faulty configurations check
  */
 #if (( 0 == LED_CFG_TIMER_USE_EN ) && ( 0 == LED_CFG_GPIO_USE_EN ))
-	#error "Select either GPIO or TIMER PWM LED driver!"
+    #error "Select either GPIO or TIMER PWM LED driver!"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Functions
 ////////////////////////////////////////////////////////////////////////////////
-const void * led_cfg_get_table(void);
+const led_cfg_t * led_cfg_get_table(void);
 
 #endif // __LED_CFG_H_
 
