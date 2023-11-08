@@ -5,10 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project/module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
-## V1.1.0 - 29.09.2021
-
-### Notice
- - Initial release
+## V1.1.0 - 08.11.2023
 
 ### Added
  - Added implementation of get init flag function
