@@ -500,7 +500,10 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
 		// Set timer PWM
 		timer_pwm_set( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
 
-	#endif
+	#else
+		(void) led_num;
+		(void) duty;
+    #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -670,6 +673,7 @@ led_status_t led_hndl(void)
 			switch( g_led[led_num].mode )
 			{
 				case eLED_MODE_NORMAL:
+				case eLED_MODE_FADE_TOGGLE:
 					// No action...
 					break;
 
@@ -689,6 +693,7 @@ led_status_t led_hndl(void)
 					led_fade_blink_hndl( led_num );
 					break;
 
+				case eLED_MODE_NUM_OF:
 				default:
 					LED_ASSERT( 0 );
 					break;
