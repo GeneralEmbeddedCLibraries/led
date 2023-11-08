@@ -16,7 +16,6 @@
 * @{ <!-- BEGIN GROUP -->
 */
 ////////////////////////////////////////////////////////////////////////////////
-
 #ifndef __LED_H_
 #define __LED_H_
 
@@ -27,14 +26,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../../led_cfg.h"
-
-#if ( 1 == LED_CFG_TIMER_USE_EN )
-    #include "drivers/peripheral/timer/timer/src/timer.h"
-#endif
-
-#if ( 1 == LED_CFG_GPIO_USE_EN )
-    #include "drivers/peripheral/gpio/gpio/src/gpio.h"
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Definitions
@@ -61,24 +52,6 @@ typedef enum
 } led_status_t;
 
 /**
- *  LED state
- */
-typedef enum
-{
-    eLED_OFF = 0,   /**<LED off state */
-    eLED_ON         /**<LED on state */
-} led_state_t;
-
-/**
- *     LED active polarity
- */
-typedef enum
-{
-    eLED_POL_ACTIVE_HIGH = 0,
-    eLED_POL_ACTIVE_LOW,
-} led_polarity_t;
-
-/**
  *  Blink mode
  */
 typedef enum
@@ -92,43 +65,6 @@ typedef enum
 
     eLED_BLINK_NUM_OF
 } led_blink_t;
-
-/**
- *     LED low level driver options
- */
-typedef enum
-{
-    eLED_DRV_GPIO = 0,      /**<Simple GPIO LED Driver */
-    eLED_DRV_TIMER_PWM,     /**<Timer PWM LED Driver */
-
-    eLED_DRV_NUM_OF
-} led_ll_drv_opt_t;
-
-/**
- *     LED low level driver channel
- */
-typedef union
-{
-    #if ( 1 == LED_CFG_TIMER_USE_EN )
-        timer_ch_t tim_ch;
-    #endif
-
-    #if ( 1 == LED_CFG_GPIO_USE_EN )
-        gpio_pin_t gpio_pin;
-    #endif
-
-} led_drv_ch_t;
-
-/**
- *     LED configuration
- */
-typedef struct
-{   
-    led_ll_drv_opt_t    drv_type;       /**<LED driver type */
-    led_drv_ch_t        drv_ch;         /**<LED driver channel */
-    led_state_t         initial_state;  /**<Initial state of LED */
-    led_polarity_t      polarity;       /**<LED active polarity */
-} led_cfg_t;
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
 
