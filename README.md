@@ -79,7 +79,7 @@ Enabled only if using timer PWM as low level driver:
 ## **How to use**
 ---
 
-1. List all LEDs inside **led_cfg.h** file:
+**1. List all LEDs inside **led_cfg.h** file:**
 ```C
 /**
  *     List of LEDs
@@ -103,7 +103,7 @@ typedef enum
 } led_num_t;
 ```
 
-2. Set up used low level drivers and main handler period inside **led_cfg.h** file:
+**2. Set up used low level drivers and main handler period inside **led_cfg.h** file:**
 ```C
 /**
  * 	Main LED handler period
@@ -122,7 +122,7 @@ typedef enum
 #define LED_CFG_GPIO_USE_EN						( 1 )
 ```
 
-3. Set up configuration table inside **led_cfg.c** file:
+**3. Set up configuration table inside **led_cfg.c** file:**
 ```C
 /**
  *     LED configuration table
@@ -153,7 +153,7 @@ static const led_cfg_t g_led_cfg[ eLED_NUM_OF ] =
 
 };
 ```
-4. Include, initialize & handle:
+**4. Include, initialize & handle:**
 
 Main LED handler **led_hndl()** must be called with a fixed period of **LED_CFG_HNDL_PERIOD_S** (defined inside led_cfg.h) in order to produce nice fading/effects. 
 
@@ -176,7 +176,7 @@ if ( eLED_OK != led_init())
 }
 ```
 
-5. Blink with LEDs at will...
+**5. Blink with LEDs at will...**
 ```C
 // Set LED ON
 led_set( eLED_DEBUG, eLED_ON );
