@@ -24,15 +24,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include <stdint.h>
 #include <stdbool.h>
-#include "project_config.h"
 #include "../../led_cfg.h"
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
-	#include "drivers/peripheral/timer/timer.h"
+	#include "drivers/peripheral/timer/timer/src/timer.h"
 #endif
 
 #if ( 1 == LED_CFG_GPIO_USE_EN )
-	#include "drivers/peripheral/gpio/gpio.h"
+	#include "drivers/peripheral/gpio/gpio/src/gpio.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +92,7 @@ typedef enum
 } led_blink_t;
 
 /**
- * 	LED driver
+ * 	LED low level driver options
  */
 typedef enum
 {
@@ -101,10 +100,10 @@ typedef enum
 	eLED_DRV_TIMER_PWM,		/**<Timer PWM LED Driver */
 
 	eLED_DRV_NUM_OF
-} led_drv_t;
+} led_ll_drv_opt_t;
 
 /**
- * 	LED driver channel
+ * 	LED low level driver channel
  */
 typedef union
 {
@@ -113,7 +112,7 @@ typedef union
 	#endif
 
 	#if ( 1 == LED_CFG_GPIO_USE_EN )
-		gpio_pins_t gpio_pin;
+		gpio_pin_t gpio_pin;
 	#endif
 
 } led_drv_ch_t;
@@ -122,11 +121,11 @@ typedef union
  * 	LED configuration
  */
 typedef struct
-{
-	led_drv_t 		drv_type;		/**<LED driver type */
-	led_drv_ch_t	drv_ch;			/**<LED driver channel */
-	led_state_t		initial_state;	/**<Initial state of LED */
-	led_polarity_t	polarity;		/**<LED active polarity */
+{   
+	led_ll_drv_opt_t    drv_type;		/**<LED driver type */
+	led_drv_ch_t        drv_ch;			/**<LED driver channel */
+	led_state_t         initial_state;	/**<Initial state of LED */
+	led_polarity_t      polarity;		/**<LED active polarity */
 } led_cfg_t;
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
@@ -153,6 +152,7 @@ led_status_t led_set    		(const led_num_t num, const led_state_t state);
 led_status_t led_toggle			(const led_num_t num);
 led_status_t led_blink			(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
 led_status_t led_get_active_time(const led_num_t num, float32_t * const p_active_time);
+led_status_t led_is_idle        (const led_num_t num, bool * const p_is_idle);
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
 	led_status_t led_set_smooth		(const led_num_t num, const led_state_t state);

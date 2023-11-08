@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -497,9 +498,12 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
 		}
 
 		// Set timer PWM
-		timer_set_pwm( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
+		timer_pwm_set( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
 
-	#endif
+	#else
+		(void) led_num;
+		(void) duty;
+    #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -521,7 +525,7 @@ static void	led_set_low(const led_num_t led_num, const float32_t duty, const flo
 	}
 
 	// Set GPIO
-	else if ( eLED_DRV_GPIO == gp_cfg_table[led_num].drv_type  )
+	else if ( eLED_DRV_GPIO == gp_cfg_table[led_num].drv_type )
 	{
 		led_set_gpio( led_num, duty, max_duty );
 	}
@@ -669,6 +673,7 @@ led_status_t led_hndl(void)
 			switch( g_led[led_num].mode )
 			{
 				case eLED_MODE_NORMAL:
+				case eLED_MODE_FADE_TOGGLE:
 					// No action...
 					break;
 
@@ -688,6 +693,7 @@ led_status_t led_hndl(void)
 					led_fade_blink_hndl( led_num );
 					break;
 
+				case eLED_MODE_NUM_OF:
 				default:
 					LED_ASSERT( 0 );
 					break;
@@ -885,6 +891,52 @@ led_status_t led_get_active_time(const led_num_t num, float32_t * const p_active
 	}
 
 	return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*   	Is LED in idle state
+*
+* @brief    Get if LED is in idle state, meaning that it no longer blinks!
+*
+* @param[in]	num			- LED number
+* @param[out]	p_is_idle   - Is LED in idle state
+* @return   	status		- Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
+{
+	led_status_t status = eLED_OK;
+
+	LED_ASSERT( true == gb_is_init );
+	LED_ASSERT( num < eLED_NUM_OF );
+	LED_ASSERT( NULL != p_is_idle );
+
+	if ( true == gb_is_init )
+	{
+		if 	(	( num < eLED_NUM_OF )
+			&& 	( NULL != p_is_idle ))
+		{
+			if ( eLED_MODE_NORMAL == g_led[num].mode )
+            {
+                *p_is_idle = true;
+            }
+            else
+            {
+                *p_is_idle = false;
+            }
+		}
+		else
+		{
+			status = eLED_ERROR;
+		}
+	}
+	else
+	{
+		status = eLED_ERROR_INIT;
+	}
+
+	return status;    
 }
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
