@@ -583,6 +583,9 @@ led_status_t led_init(void)
             // Check low level drivers
             if ( eLED_OK == led_check_drv_init())
             {
+                // Set init success
+                gb_is_init = true;
+
                 // Set up live LED configuration
                 for ( led_num_t num = 0; num < eLED_NUM_OF; num++ )
                 {
@@ -603,9 +606,6 @@ led_status_t led_init(void)
                     led_set( num, gp_cfg_table[num].initial_state );
                     led_set_low( num, g_led[num].duty, g_led[num].max_duty );
                 }
-
-                // Set init success
-                gb_is_init = true;
             }
 
             // Low level drivers not initialised
