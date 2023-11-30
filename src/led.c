@@ -1019,10 +1019,11 @@ led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
     * @param[in]    on_time - Time that LED will be turned ON
     * @param[in]    period  - Period of blink
     * @param[in]    blink   - Number of blinks
+    * @param[in]    inter   - Interval in which blinks repeats (0-single shot)
     * @return       status  - Status of operation
     */
     ////////////////////////////////////////////////////////////////////////////////
-    led_status_t led_blink_smooth(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink)
+    led_status_t led_blink_smooth(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink, const float32_t inter)
     {
         led_status_t status = eLED_OK;
 
@@ -1040,6 +1041,7 @@ led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
                 g_led[num].on_time  = on_time;
                 g_led[num].period   = period;
                 g_led[num].per_time = 0.0f;
+                g_led[num].inter    = inter;
 
                 if ( eLED_BLINK_CONTINUOUS == blink )
                 {

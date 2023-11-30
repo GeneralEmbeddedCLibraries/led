@@ -80,6 +80,32 @@ typedef enum
 
 #endif
 
+/**
+ *  Blink pattern
+ */
+typedef struct
+{
+    /**<Blink groupe */
+    struct
+    {
+        float32_t   on_time;    /**<Blink ON time in sec */
+        float32_t   period;     /**<Blink period in sec */
+        uint32_t    num_of;     /**<Number of blinks */
+    } blink;
+    
+    /**<Blink groupe config */
+    float32_t   interval;       /**<Interval (period) between blinks */
+    uint32_t    num_of;         /**<Number of blink groups */
+    float32_t   start_delay;    /**<Start delay in seconds */ 
+     
+} led_blink_pattern_t;
+
+/**
+ *  Interval special value
+ */
+#define LED_INTERVAL_SINGLE_SHOT        ((float32_t) ( 0.0f ))
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Functions
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,9 +113,20 @@ led_status_t led_init           	(void);
 led_status_t led_deinit             (void);
 led_status_t led_is_init        	(bool * const p_is_init);
 led_status_t led_hndl           	(void);
+
 led_status_t led_set            	(const led_num_t num, const led_state_t state);
 led_status_t led_toggle         	(const led_num_t num);
-led_status_t led_blink          	(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
+led_status_t led_blink              (const led_num_t num, const led_blink_pattern_t * const p_pattern);
+
+//led_status_t led_blink          	(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
+
+
+led_status_t led_get_state          (const led_num_t num, led_state_t * p_state);
+led_status_t led_get_time           (const led_num_t num, float32_t * const p_on_time, float32_t * const p_off_time);
+
+
+
+
 led_status_t led_get_active_time	(const led_num_t num, float32_t * const p_active_time);
 led_status_t led_is_idle        	(const led_num_t num, bool * const p_is_idle);
 
