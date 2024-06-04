@@ -89,6 +89,7 @@ typedef struct
 {
     float32_t   duty;           /**<Duty cycle of LED */
     float32_t   max_duty;       /**<Maximum duty cycle of LED in % */
+    float32_t   min_duty;       /**<Minumum duty cycle of LED in % */
     float32_t   fade_time;      /**<Time for fading functionalities */
     float32_t   fade_in_k;      /**<Fade in factor */
     float32_t   fade_out_k;     /**<Fade out factor */
@@ -108,7 +109,7 @@ typedef struct
 /**
  *     LED data
  */
-static led_t g_led[ eLED_NUM_OF ] = { 0 };
+static led_t g_led[eLED_NUM_OF] = { 0 };
 
 /**
  *     Initialization guard
@@ -221,22 +222,22 @@ static void led_fade_out_hndl(const led_num_t num, const led_mode_t exit_mode)
     }
     else
     {
-        g_led[num].duty = 0.0f;
+        g_led[num].duty = g_led[num].min_duty;
     }
 
     // Is LED fully OFF?
-    if ( g_led[num].duty > 0.001f )
+    if ( g_led[num].duty > ( g_led[num].min_duty + 0.001f ))
     {
         // Increment time
         g_led[num].fade_time += LED_HNDL_PERIOD_S;
         g_led[num].fade_time = LED_TIME_LIM( g_led[num].fade_time );
     }
 
-    // LED fully OFF
+    // LED fully in OFF state (doesn't mean that it is not shining)
     else
     {
         // Limit duty
-        g_led[num].duty = 0.0f;
+        g_led[num].duty = g_led[num].min_duty;
 
         // Reset time
         g_led[num].fade_time = 0.0f;
@@ -262,7 +263,7 @@ static void led_blink_hndl(const led_num_t num)
     }
     else
     {
-        g_led[num].duty = 0.0f;
+        g_led[num].duty = g_led[num].min_duty;
     }
 
     // Manage blink counter
@@ -498,9 +499,9 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
         {
             tim_duty = ( 100.0f - duty );
 
-            if ( tim_duty < 0.0f )
+            if ( tim_duty < g_led[led_num].min_duty )
             {
-                tim_duty = 0.0f;
+                tim_duty = g_led[led_num].min_duty;
             }
         }
 
@@ -589,8 +590,9 @@ led_status_t led_init(void)
                 // Set up live LED configuration
                 for ( led_num_t num = 0; num < eLED_NUM_OF; num++ )
                 {
-                    g_led[num].duty             = 0.0f;
-                    g_led[num].max_duty         = 100.0f;
+                    g_led[num].duty             = 0.0f;     // %
+                    g_led[num].max_duty         = 100.0f;   // %
+                    g_led[num].min_duty         = 0.0f;     // %
                     g_led[num].fade_time        = 0.0f;
                     g_led[num].fade_in_k        = LED_FADE_IN_COEF_T_TO_DUTY;
                     g_led[num].fade_out_k       = LED_FADE_OUT_COEF_T_TO_DUTY;
@@ -773,7 +775,7 @@ led_status_t led_set(const led_num_t num, const led_state_t state)
             }
             else
             {
-                g_led[num].duty = 0.0f;
+                g_led[num].duty = g_led[num].min_duty;
             }
         }
         else
@@ -812,11 +814,11 @@ led_status_t led_toggle(const led_num_t num)
 
             if ( g_led[num].duty >= g_led[num].max_duty )
             {
-                g_led[num].duty = 0.0f;
+                g_led[num].duty = g_led[num].min_duty;
             }
             else
             {
-                g_led[num].duty = g_led[num].max_duty ;
+                g_led[num].duty = g_led[num].max_duty;
             }
         }
         else
@@ -1087,8 +1089,9 @@ led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
                 &&  ( eLED_MODE_NORMAL == g_led[num].mode ))
             {
                 g_led[num].max_duty         = p_fade_cfg->max_duty;
-                g_led[num].fade_in_k        = (float32_t) ( 2.0f * g_led[num].max_duty / ( p_fade_cfg->fade_in_time * p_fade_cfg->fade_in_time ));
-                g_led[num].fade_out_k       = (float32_t) ( 2.0f * g_led[num].max_duty / ( p_fade_cfg->fade_out_time * p_fade_cfg->fade_out_time ));
+                g_led[num].min_duty         = p_fade_cfg->min_duty;
+                g_led[num].fade_in_k        = (float32_t) ( 2.0f * ( g_led[num].max_duty - g_led[num].min_duty ) / ( p_fade_cfg->fade_in_time * p_fade_cfg->fade_in_time ));
+                g_led[num].fade_out_k       = (float32_t) ( 2.0f * ( g_led[num].max_duty - g_led[num].min_duty ) / ( p_fade_cfg->fade_out_time * p_fade_cfg->fade_out_time ));
                 g_led[num].fade_out_time    = p_fade_cfg->fade_out_time;
             }
             else

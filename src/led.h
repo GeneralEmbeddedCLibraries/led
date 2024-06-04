@@ -76,6 +76,7 @@ typedef enum
         float32_t fade_in_time;     /**<Fade in time */
         float32_t fade_out_time;    /**<Fade out time */
         float32_t max_duty;         /**<Maximum duty cycle in % */
+        float32_t min_duty;         /**<Minimum duty cycle in % */
     } led_fade_cfg_t;
 
 #endif
