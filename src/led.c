@@ -505,7 +505,7 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
         }
 
         // Set timer PWM
-        timer_pwm_set( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
+        timer_pwmo_ch_set( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
 
     #else
         (void) led_num;
