@@ -88,7 +88,7 @@ typedef enum
 typedef struct
 {
     float32_t   duty;           /**<Duty cycle of LED */
-    float32_t   max_duty;       /**<Maximum duty cycle of LED */
+    float32_t   max_duty;       /**<Maximum duty cycle of LED in % */
     float32_t   fade_time;      /**<Time for fading functionalities */
     float32_t   fade_in_k;      /**<Fade in factor */
     float32_t   fade_out_k;     /**<Fade out factor */
@@ -483,7 +483,7 @@ static void led_set_gpio(const led_num_t led_num, const float32_t duty, const fl
 *       Set led via TIMER driver
 *
 * @param[in]    led_num     - Number of LED
-* @param[in]    duty        - Current duty of LED
+* @param[in]    duty        - Current duty of LED in %
 * @return       void
 */
 ////////////////////////////////////////////////////////////////////////////////
@@ -496,7 +496,7 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
         // Apply polarity
         if ( eLED_POL_ACTIVE_LOW == gp_cfg_table[led_num].polarity )
         {
-            tim_duty = ( 1.0f - duty );
+            tim_duty = ( 100.0f - duty );
 
             if ( tim_duty < 0.0f )
             {
@@ -590,7 +590,7 @@ led_status_t led_init(void)
                 for ( led_num_t num = 0; num < eLED_NUM_OF; num++ )
                 {
                     g_led[num].duty             = 0.0f;
-                    g_led[num].max_duty         = 1.0f;
+                    g_led[num].max_duty         = 100.0f;
                     g_led[num].fade_time        = 0.0f;
                     g_led[num].fade_in_k        = LED_FADE_IN_COEF_T_TO_DUTY;
                     g_led[num].fade_out_k       = LED_FADE_OUT_COEF_T_TO_DUTY;
