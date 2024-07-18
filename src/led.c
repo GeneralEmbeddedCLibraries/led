@@ -33,7 +33,7 @@
 /**
  *     LED handler period in second and frequency in Hz
  */
-#define LED_HNDL_PERIOD_S                   ( LED_CFG_HNDL_PERIOD_S )
+#define LED_HNDL_PERIOD_S                   ( LED_CFG_HNDL_PERIOD_MS / 1000.0f )
 #define LED_HNDL_FREQ_HZ                    ((float32_t) ( 1.0 / PWR_HNDL_PERIOD_S ))
 
 /**
@@ -684,7 +684,7 @@ led_status_t led_is_init(bool * const p_is_init)
 *       LED handler
 *
 * @note     This function shall be called with constant period of value
-*           set in "led_cfg.h" with macro "LED_CFG_HNDL_PERIOD_S".
+*           set in "led_cfg.h" with macro "LED_CFG_HNDL_PERIOD_MS".
 *
 * @return   status  - Status of operation
 */

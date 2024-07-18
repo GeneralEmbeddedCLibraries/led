@@ -68,9 +68,9 @@ typedef enum
 
 /**
  *     Main LED handler period
- *     Unit: sec
+ *     Unit: ms
  */
-#define LED_CFG_HNDL_PERIOD_S                   ( 0.01f )
+#define LED_CFG_HNDL_PERIOD_MS                  ( 10 )
 
 /**
  *     Using timer for driving LED
