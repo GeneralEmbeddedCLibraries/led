@@ -969,6 +969,30 @@ led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
     return status;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Is LED turned on (any amount)
+*
+*   LED is considered turned on if its in any transient mode, is blinking, or
+*   its duty cycle is any amount greated then 0.
+*
+* @param[in]    num         - LED number
+* @param[out]   p_is_on     - Is LED on
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_is_on(const led_num_t num, bool *const p_is_on)
+{
+    bool is_idle;
+    led_status_t status = led_is_idle(num, &is_idle);
+    if (eLED_OK == status)
+    {
+        *p_is_on = (true != is_idle) || (0 != g_led[num].duty);
+    }
+
+    return status;
+}
+
 #if ( 1 == LED_CFG_TIMER_USE_EN )
 
     ////////////////////////////////////////////////////////////////////////////////
