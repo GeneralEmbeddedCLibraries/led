@@ -408,7 +408,7 @@ static led_status_t led_init_drv(void)
 
     #if ( 1 == LED_CFG_GPIO_USE_EN )
 
-        if ( eGPIO_OK == gpio_init() )
+        if ( eGPIO_OK != gpio_init() )
         {
             status |= eLED_ERROR_INIT;
         }
