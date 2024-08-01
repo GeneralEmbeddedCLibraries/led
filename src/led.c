@@ -133,7 +133,7 @@ static bool         led_is_on_time          (const led_num_t num);
 static bool         led_is_period_time      (const led_num_t num);
 static void         led_blink_cnt_hndl      (const led_num_t num);
 static void         led_manage_time         (const led_num_t num);
-static led_status_t led_check_drv_init      (void);
+static led_status_t led_init_drv            (void);
 static void         led_set_gpio            (const led_num_t led_num, const float32_t duty, const float32_t duty_max);
 static void         led_set_timer           (const led_num_t led_num, const float32_t duty);
 static void         led_set_low             (const led_num_t led_num, const float32_t duty, const float32_t duty_max);
@@ -388,23 +388,18 @@ static void led_blink_cnt_hndl(const led_num_t num)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*       Check that low level drivers are initialized
+*       Initialize low lever drivers
 *
 * @return       status - Status of low level initialization
 */
 ////////////////////////////////////////////////////////////////////////////////
-static led_status_t led_check_drv_init(void)
+static led_status_t led_init_drv(void)
 {
     led_status_t status = eLED_OK;
 
     #if ( 1 == LED_CFG_TIMER_USE_EN )
 
-        bool tim_drv_init = false;
-
-        // Get init flag
-        timer_is_init( &tim_drv_init );
-
-        if ( false == tim_drv_init )
+        if ( eTIMER_OK != timer_init() )
         {
             status |= eLED_ERROR_INIT;
         }
@@ -413,12 +408,7 @@ static led_status_t led_check_drv_init(void)
 
     #if ( 1 == LED_CFG_GPIO_USE_EN )
 
-        bool gpio_drv_init = false;
-
-        // Get init flag
-        gpio_is_init( &gpio_drv_init );
-
-        if ( false == gpio_drv_init )
+        if ( eGPIO_OK == gpio_init() )
         {
             status |= eLED_ERROR_INIT;
         }
@@ -564,8 +554,6 @@ static void led_set_low(const led_num_t led_num, const float32_t duty, const flo
 /**
 *       Initialize LEDs
 *
-* @pre     Timers/GPIO shall be initialized before calling that function!
-*
 * @return   status - Status of initialisation
 */
 ////////////////////////////////////////////////////////////////////////////////
@@ -581,8 +569,8 @@ led_status_t led_init(void)
 
         if ( NULL != gp_cfg_table )
         {
-            // Check low level drivers
-            if ( eLED_OK == led_check_drv_init())
+            // Initialize low level drivers
+            if ( eLED_OK == led_init_drv())
             {
                 // Set init success
                 gb_is_init = true;
