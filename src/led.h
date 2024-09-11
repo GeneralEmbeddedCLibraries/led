@@ -94,6 +94,8 @@ led_status_t led_blink          	(const led_num_t num, const float32_t on_time, 
 led_status_t led_get_active_time	(const led_num_t num, float32_t * const p_active_time);
 led_status_t led_is_idle        	(const led_num_t num, bool * const p_is_idle);
 led_status_t led_is_on              (const led_num_t num, bool *const p_is_on);
+led_status_t led_set_on_brightness  (const led_num_t num, const float32_t duty_cycle);
+led_status_t led_set_off_brightness (const led_num_t num, const float32_t duty_cycle);
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
     led_status_t led_set_smooth     (const led_num_t num, const led_state_t state);

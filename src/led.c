@@ -981,6 +981,77 @@ led_status_t led_is_on(const led_num_t num, bool *const p_is_on)
     return status;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Set LED brightness (duty cycle) when turned on
+*
+* @param[in]    num         - LED number
+* @param[in]    duty_cycle  - Duty cycle [%]
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_set_on_brightness(const led_num_t num, const float32_t duty_cycle)
+{
+    led_status_t status = eLED_OK;
+
+    LED_ASSERT( true == gb_is_init );
+    LED_ASSERT( num < eLED_NUM_OF );
+
+    if ( true == gb_is_init )
+    {
+        if  ( num < eLED_NUM_OF )
+        {
+            g_led[num].duty = duty_cycle;
+            g_led[num].max_duty = duty_cycle;
+        }
+        else
+        {
+            status = eLED_ERROR;
+        }
+    }
+    else
+    {
+        status = eLED_ERROR_INIT;
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Set LED brightness (duty cycle) when turned off
+*
+* @param[in]    num         - LED number
+* @param[in]    duty_cycle  - Duty cycle [%]
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_set_off_brightness(const led_num_t num, const float32_t duty_cycle)
+{
+    led_status_t status = eLED_OK;
+
+    LED_ASSERT( true == gb_is_init );
+    LED_ASSERT( num < eLED_NUM_OF );
+
+    if ( true == gb_is_init )
+    {
+        if  ( num < eLED_NUM_OF )
+        {
+            g_led[num].min_duty = duty_cycle;
+        }
+        else
+        {
+            status = eLED_ERROR;
+        }
+    }
+    else
+    {
+        status = eLED_ERROR_INIT;
+    }
+
+    return status;
+}
+
 #if ( 1 == LED_CFG_TIMER_USE_EN )
 
     ////////////////////////////////////////////////////////////////////////////////
