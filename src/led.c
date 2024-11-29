@@ -99,6 +99,7 @@ typedef struct
     float32_t   on_time;        /**<On time for blink mode */
     float32_t   active_time;    /**<LED active time - turned ON time */
     led_mode_t  mode;           /**<Current LED mode */
+    led_state_t state;          /**<Current LED state */
     uint8_t     blink_cnt;      /**<Blink LED live counter */
 } led_t;
 
@@ -755,6 +756,7 @@ led_status_t led_set(const led_num_t num, const led_state_t state)
     {
         if ( num < eLED_NUM_OF )
         {
+            g_led[num].state = state;
             g_led[num].mode = eLED_MODE_NORMAL;
 
             if ( eLED_ON == state )
@@ -836,16 +838,7 @@ led_status_t led_toggle(const led_num_t num)
     {
         if ( num < eLED_NUM_OF )
         {
-            g_led[num].mode = eLED_MODE_NORMAL;
-
-            if ( g_led[num].duty >= g_led[num].max_duty )
-            {
-                g_led[num].duty = g_led[num].min_duty;
-            }
-            else
-            {
-                g_led[num].duty = g_led[num].max_duty;
-            }
+            led_set(num, (g_led[num].state == eLED_OFF) ? eLED_ON : eLED_OFF);
         }
         else
         {
@@ -1039,8 +1032,9 @@ led_status_t led_set_on_brightness(const led_num_t num, const float32_t duty_cyc
     {
         if  ( num < eLED_NUM_OF )
         {
-            g_led[num].duty = duty_cycle;
             g_led[num].max_duty = duty_cycle;
+
+            led_set(num, g_led[num].state); // Update brigthness if already turned on
         }
         else
         {
@@ -1076,6 +1070,8 @@ led_status_t led_set_off_brightness(const led_num_t num, const float32_t duty_cy
         if  ( num < eLED_NUM_OF )
         {
             g_led[num].min_duty = duty_cycle;
+
+            led_set(num, g_led[num].state); // Update brigthness if already turned off
         }
         else
         {
@@ -1112,6 +1108,8 @@ led_status_t led_set_off_brightness(const led_num_t num, const float32_t duty_cy
         {
             if ( num < eLED_NUM_OF )
             {
+                g_led[num].state = state;
+
                 if ( eLED_ON == state )
                 {
                     g_led[num].mode = eLED_MODE_FADE_IN;
@@ -1209,11 +1207,18 @@ led_status_t led_set_off_brightness(const led_num_t num, const float32_t duty_cy
                 &&  ( NULL != p_fade_cfg )
                 &&  ( eLED_MODE_NORMAL == g_led[num].mode ))
             {
+                const bool should_update = (p_fade_cfg->max_duty != g_led[num].max_duty) || (p_fade_cfg->min_duty != g_led[num].min_duty);
+
                 g_led[num].max_duty         = p_fade_cfg->max_duty;
                 g_led[num].min_duty         = p_fade_cfg->min_duty;
                 g_led[num].fade_in_k        = (float32_t) ( 2.0f * ( g_led[num].max_duty - g_led[num].min_duty ) / ( p_fade_cfg->fade_in_time * p_fade_cfg->fade_in_time ));
                 g_led[num].fade_out_k       = (float32_t) ( 2.0f * ( g_led[num].max_duty - g_led[num].min_duty ) / ( p_fade_cfg->fade_out_time * p_fade_cfg->fade_out_time ));
                 g_led[num].fade_out_time    = p_fade_cfg->fade_out_time;
+                
+                if (should_update)
+                {
+                    led_set_smooth(num, g_led[num].state); // Update brigthness
+                }
             }
             else
             {
