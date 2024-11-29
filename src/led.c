@@ -781,6 +781,44 @@ led_status_t led_set(const led_num_t num, const led_state_t state)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
+*       Set LED brightness to fully on (100%) or off (0%)
+*
+* @param[in]    num     - LED enumeration number
+* @param[in]    state   - State of LED
+* @return       status  - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_set_full(const led_num_t num, const led_state_t state)
+{
+    led_status_t status = eLED_OK;
+
+    LED_ASSERT( true == gb_is_init );
+    LED_ASSERT( num < eLED_NUM_OF );
+
+    if ( true == gb_is_init )
+    {
+        if ( num < eLED_NUM_OF )
+        {
+            g_led[num].max_duty = 100.f;
+            g_led[num].min_duty = 0;
+            
+            led_set(num, state);
+        }
+        else
+        {
+            status = eLED_ERROR;
+        }
+    }
+    else
+    {
+        status = eLED_ERROR_INIT;
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
 *       Toggle LED
 *
 * @param[in]    num     - LED enumeration number

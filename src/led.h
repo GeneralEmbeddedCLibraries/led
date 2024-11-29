@@ -89,6 +89,7 @@ led_status_t led_deinit             (void);
 led_status_t led_is_init        	(bool * const p_is_init);
 led_status_t led_hndl           	(void);
 led_status_t led_set            	(const led_num_t num, const led_state_t state);
+led_status_t led_set_full           (const led_num_t num, const led_state_t state);
 led_status_t led_toggle         	(const led_num_t num);
 led_status_t led_blink          	(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
 led_status_t led_get_active_time	(const led_num_t num, float32_t * const p_active_time);
