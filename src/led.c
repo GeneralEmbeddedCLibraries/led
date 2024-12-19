@@ -1051,10 +1051,10 @@ led_status_t led_set_on_brightness(const led_num_t num, const float32_t duty_cyc
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*       Set LED brightness (duty cycle) when turned off
+*       Set LED brightness (duty cycle) when turned off   
 *
 * @param[in]    num         - LED number
-* @param[in]    duty_cycle  - Duty cycle [%]
+* @param[in]    duty_cycle  - Duty cycle [%], range: 0% - 100%
 * @return       status      - Status of operation
 */
 ////////////////////////////////////////////////////////////////////////////////
@@ -1084,6 +1084,45 @@ led_status_t led_set_off_brightness(const led_num_t num, const float32_t duty_cy
     }
 
     return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Get current LED brightness (duty cycle)
+*
+* @note  When return value is 0%, that means that LED is fully turned OFF.
+*
+* @param[in]    num         - LED number
+* @param[in]    duty_cycle  - Duty cycle [%], range: 0% - 100%
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_get_duty(const led_num_t num, float32_t * const p_duty_cycle)
+{
+    led_status_t status = eLED_OK;
+
+    LED_ASSERT( true == gb_is_init );
+    LED_ASSERT( num < eLED_NUM_OF );
+    LED_ASSERT( NULL != p_duty_cycle );
+
+    if ( true == gb_is_init )
+    {
+        if  (   ( num < eLED_NUM_OF )
+            &&  ( NULL != p_duty_cycle ))
+        {
+            *p_duty_cycle = g_led[num].duty;
+        }
+        else
+        {
+            status = eLED_ERROR;
+        }
+    }
+    else
+    {
+        status = eLED_ERROR_INIT;
+    }
+
+    return status;    
 }
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
@@ -1231,6 +1270,22 @@ led_status_t led_set_off_brightness(const led_num_t num, const float32_t duty_cy
         }
 
         return status;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+    *       Is LED in smooth blink mode
+    *
+    * @param[in]    num - LED number
+    * @return       true in smooth blink mode
+    */
+    ////////////////////////////////////////////////////////////////////////////////
+    bool led_is_in_smooth_blink_mode(const led_num_t num)
+    {
+        LED_ASSERT( true == gb_is_init );
+        LED_ASSERT( num < eLED_NUM_OF );
+
+        return ( eLED_MODE_FADE_BLINK == g_led[num].mode );      
     }
 
 #endif

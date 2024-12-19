@@ -97,11 +97,13 @@ led_status_t led_is_idle        	(const led_num_t num, bool * const p_is_idle);
 led_status_t led_is_on              (const led_num_t num, bool *const p_is_on);
 led_status_t led_set_on_brightness  (const led_num_t num, const float32_t duty_cycle);
 led_status_t led_set_off_brightness (const led_num_t num, const float32_t duty_cycle);
+led_status_t led_get_duty           (const led_num_t num, float32_t * const p_duty_cycle);
 
 #if ( 1 == LED_CFG_TIMER_USE_EN )
-    led_status_t led_set_smooth     (const led_num_t num, const led_state_t state);
-    led_status_t led_blink_smooth   (const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
-    led_status_t led_set_fade_cfg   (const led_num_t num, const led_fade_cfg_t * const p_fade_cfg);
+    led_status_t led_set_smooth             (const led_num_t num, const led_state_t state);
+    led_status_t led_blink_smooth           (const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink);
+    led_status_t led_set_fade_cfg           (const led_num_t num, const led_fade_cfg_t * const p_fade_cfg);
+    bool         led_is_in_smooth_blink_mode(const led_num_t num);
 #endif
 
 #endif // __LED_H_
