@@ -51,7 +51,7 @@ timer_status_t timer_pwm_set  	(const timer_ch_t tim_ch, const float32_t duty);
 In order to be part of *General Embedded C Libraries Ecosystem* this module must be placed in following path: 
 
 ```
-root/middleware/cli/cli/"module_space"
+root/drivers/hmi/led/led/"module_space"
 ```
 
  ## **API**
