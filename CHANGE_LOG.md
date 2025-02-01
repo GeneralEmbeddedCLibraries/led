@@ -9,10 +9,10 @@ and this project/module adheres to [Semantic Versioning](https://semver.org/spec
 
 ### Added
  - Added new API functions
-    +led_is_on              
-    +led_set_on_brightness  
-    +led_set_off_brightness 
-    +led_get_duty        
+    + led_is_on              
+    + led_set_on_brightness  
+    + led_set_off_brightness 
+    + led_get_duty        
  - Added minimum duty cycle option to config    
 
 ### Changed
