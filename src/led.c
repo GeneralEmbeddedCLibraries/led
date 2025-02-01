@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Ziga Miklosic
+// Copyright (c) 2025 Ziga Miklosic
 // All Rights Reserved
 // This software is under MIT licence (https://opensource.org/licenses/MIT)
 ////////////////////////////////////////////////////////////////////////////////
@@ -7,8 +7,8 @@
 * @brief    LED manipulations
 * @author   Ziga Miklosic
 * @email    ziga.miklosic@gmail.com
-* @date     08.11.2023
-* @version  V1.1.0
+* @date     01.02.2025
+* @version  V1.2.0
 */
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -33,7 +33,7 @@
 /**
  *     LED handler period in second and frequency in Hz
  */
-#define LED_HNDL_PERIOD_S                   ( LED_CFG_HNDL_PERIOD_S )
+#define LED_HNDL_PERIOD_S                   ( LED_CFG_HNDL_PERIOD_MS / 1000.0f )
 #define LED_HNDL_FREQ_HZ                    ((float32_t) ( 1.0 / PWR_HNDL_PERIOD_S ))
 
 /**
@@ -88,7 +88,8 @@ typedef enum
 typedef struct
 {
     float32_t   duty;           /**<Duty cycle of LED */
-    float32_t   max_duty;       /**<Maximum duty cycle of LED */
+    float32_t   max_duty;       /**<Maximum duty cycle of LED in % */
+    float32_t   min_duty;       /**<Minumum duty cycle of LED in % */
     float32_t   fade_time;      /**<Time for fading functionalities */
     float32_t   fade_in_k;      /**<Fade in factor */
     float32_t   fade_out_k;     /**<Fade out factor */
@@ -98,6 +99,7 @@ typedef struct
     float32_t   on_time;        /**<On time for blink mode */
     float32_t   active_time;    /**<LED active time - turned ON time */
     led_mode_t  mode;           /**<Current LED mode */
+    led_state_t state;          /**<Current LED state */
     uint8_t     blink_cnt;      /**<Blink LED live counter */
 } led_t;
 
@@ -108,7 +110,7 @@ typedef struct
 /**
  *     LED data
  */
-static led_t g_led[ eLED_NUM_OF ] = { 0 };
+static led_t g_led[eLED_NUM_OF] = { 0 };
 
 /**
  *     Initialization guard
@@ -132,7 +134,7 @@ static bool         led_is_on_time          (const led_num_t num);
 static bool         led_is_period_time      (const led_num_t num);
 static void         led_blink_cnt_hndl      (const led_num_t num);
 static void         led_manage_time         (const led_num_t num);
-static led_status_t led_check_drv_init      (void);
+static led_status_t led_init_drv            (void);
 static void         led_set_gpio            (const led_num_t led_num, const float32_t duty, const float32_t duty_max);
 static void         led_set_timer           (const led_num_t led_num, const float32_t duty);
 static void         led_set_low             (const led_num_t led_num, const float32_t duty, const float32_t duty_max);
@@ -221,22 +223,22 @@ static void led_fade_out_hndl(const led_num_t num, const led_mode_t exit_mode)
     }
     else
     {
-        g_led[num].duty = 0.0f;
+        g_led[num].duty = g_led[num].min_duty;
     }
 
     // Is LED fully OFF?
-    if ( g_led[num].duty > 0.001f )
+    if ( g_led[num].duty > ( g_led[num].min_duty + 0.001f ))
     {
         // Increment time
         g_led[num].fade_time += LED_HNDL_PERIOD_S;
         g_led[num].fade_time = LED_TIME_LIM( g_led[num].fade_time );
     }
 
-    // LED fully OFF
+    // LED fully in OFF state (doesn't mean that it is not shining)
     else
     {
         // Limit duty
-        g_led[num].duty = 0.0f;
+        g_led[num].duty = g_led[num].min_duty;
 
         // Reset time
         g_led[num].fade_time = 0.0f;
@@ -262,7 +264,7 @@ static void led_blink_hndl(const led_num_t num)
     }
     else
     {
-        g_led[num].duty = 0.0f;
+        g_led[num].duty = g_led[num].min_duty;
     }
 
     // Manage blink counter
@@ -387,23 +389,18 @@ static void led_blink_cnt_hndl(const led_num_t num)
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
-*       Check that low level drivers are initialized
+*       Initialize low lever drivers
 *
 * @return       status - Status of low level initialization
 */
 ////////////////////////////////////////////////////////////////////////////////
-static led_status_t led_check_drv_init(void)
+static led_status_t led_init_drv(void)
 {
     led_status_t status = eLED_OK;
 
     #if ( 1 == LED_CFG_TIMER_USE_EN )
 
-        bool tim_drv_init = false;
-
-        // Get init flag
-        timer_is_init( &tim_drv_init );
-
-        if ( false == tim_drv_init )
+        if ( eTIMER_OK != timer_init() )
         {
             status |= eLED_ERROR_INIT;
         }
@@ -412,12 +409,7 @@ static led_status_t led_check_drv_init(void)
 
     #if ( 1 == LED_CFG_GPIO_USE_EN )
 
-        bool gpio_drv_init = false;
-
-        // Get init flag
-        gpio_is_init( &gpio_drv_init );
-
-        if ( false == gpio_drv_init )
+        if ( eGPIO_OK != gpio_init() )
         {
             status |= eLED_ERROR_INIT;
         }
@@ -483,7 +475,7 @@ static void led_set_gpio(const led_num_t led_num, const float32_t duty, const fl
 *       Set led via TIMER driver
 *
 * @param[in]    led_num     - Number of LED
-* @param[in]    duty        - Current duty of LED
+* @param[in]    duty        - Current duty of LED in %
 * @return       void
 */
 ////////////////////////////////////////////////////////////////////////////////
@@ -496,16 +488,16 @@ static void led_set_timer(const led_num_t led_num, const float32_t duty)
         // Apply polarity
         if ( eLED_POL_ACTIVE_LOW == gp_cfg_table[led_num].polarity )
         {
-            tim_duty = ( 1.0f - duty );
+            tim_duty = ( 100.0f - duty );
 
-            if ( tim_duty < 0.0f )
+            if ( tim_duty < g_led[led_num].min_duty )
             {
-                tim_duty = 0.0f;
+                tim_duty = g_led[led_num].min_duty;
             }
         }
 
         // Set timer PWM
-        timer_pwm_set( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
+        timer_pwmo_ch_set( gp_cfg_table[led_num].drv_ch.tim_ch, tim_duty );
 
     #else
         (void) led_num;
@@ -563,8 +555,6 @@ static void led_set_low(const led_num_t led_num, const float32_t duty, const flo
 /**
 *       Initialize LEDs
 *
-* @pre     Timers/GPIO shall be initialized before calling that function!
-*
 * @return   status - Status of initialisation
 */
 ////////////////////////////////////////////////////////////////////////////////
@@ -580,8 +570,8 @@ led_status_t led_init(void)
 
         if ( NULL != gp_cfg_table )
         {
-            // Check low level drivers
-            if ( eLED_OK == led_check_drv_init())
+            // Initialize low level drivers
+            if ( eLED_OK == led_init_drv())
             {
                 // Set init success
                 gb_is_init = true;
@@ -589,8 +579,9 @@ led_status_t led_init(void)
                 // Set up live LED configuration
                 for ( led_num_t num = 0; num < eLED_NUM_OF; num++ )
                 {
-                    g_led[num].duty             = 0.0f;
-                    g_led[num].max_duty         = 1.0f;
+                    g_led[num].duty             = 0.0f;     // %
+                    g_led[num].max_duty         = 100.0f;   // %
+                    g_led[num].min_duty         = 0.0f;     // %
                     g_led[num].fade_time        = 0.0f;
                     g_led[num].fade_in_k        = LED_FADE_IN_COEF_T_TO_DUTY;
                     g_led[num].fade_out_k       = LED_FADE_OUT_COEF_T_TO_DUTY;
@@ -682,7 +673,7 @@ led_status_t led_is_init(bool * const p_is_init)
 *       LED handler
 *
 * @note     This function shall be called with constant period of value
-*           set in "led_cfg.h" with macro "LED_CFG_HNDL_PERIOD_S".
+*           set in "led_cfg.h" with macro "LED_CFG_HNDL_PERIOD_MS".
 *
 * @return   status  - Status of operation
 */
@@ -765,6 +756,7 @@ led_status_t led_set(const led_num_t num, const led_state_t state)
     {
         if ( num < eLED_NUM_OF )
         {
+            g_led[num].state = state;
             g_led[num].mode = eLED_MODE_NORMAL;
 
             if ( eLED_ON == state )
@@ -773,8 +765,46 @@ led_status_t led_set(const led_num_t num, const led_state_t state)
             }
             else
             {
-                g_led[num].duty = 0.0f;
+                g_led[num].duty = g_led[num].min_duty;
             }
+        }
+        else
+        {
+            status = eLED_ERROR;
+        }
+    }
+    else
+    {
+        status = eLED_ERROR_INIT;
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Set LED brightness to fully on (100%) or off (0%)
+*
+* @param[in]    num     - LED enumeration number
+* @param[in]    state   - State of LED
+* @return       status  - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_set_full(const led_num_t num, const led_state_t state)
+{
+    led_status_t status = eLED_OK;
+
+    LED_ASSERT( true == gb_is_init );
+    LED_ASSERT( num < eLED_NUM_OF );
+
+    if ( true == gb_is_init )
+    {
+        if ( num < eLED_NUM_OF )
+        {
+            g_led[num].max_duty = 100.f;
+            g_led[num].min_duty = 0;
+            
+            led_set(num, state);
         }
         else
         {
@@ -808,16 +838,7 @@ led_status_t led_toggle(const led_num_t num)
     {
         if ( num < eLED_NUM_OF )
         {
-            g_led[num].mode = eLED_MODE_NORMAL;
-
-            if ( g_led[num].duty >= g_led[num].max_duty )
-            {
-                g_led[num].duty = 0.0f;
-            }
-            else
-            {
-                g_led[num].duty = g_led[num].max_duty ;
-            }
+            led_set(num, (g_led[num].state == eLED_OFF) ? eLED_ON : eLED_OFF);
         }
         else
         {
@@ -967,6 +988,143 @@ led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
     return status;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Is LED turned on (any amount)
+*
+*   LED is considered turned on if its in any transient mode, is blinking, or
+*   its duty cycle is any amount greated then 0.
+*
+* @param[in]    num         - LED number
+* @param[out]   p_is_on     - Is LED on
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_is_on(const led_num_t num, bool *const p_is_on)
+{
+    bool is_idle;
+    led_status_t status = led_is_idle(num, &is_idle);
+    if (eLED_OK == status)
+    {
+        *p_is_on = (true != is_idle) || (0 != g_led[num].duty);
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Set LED brightness (duty cycle) when turned on
+*
+* @param[in]    num         - LED number
+* @param[in]    duty_cycle  - Duty cycle [%]
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_set_on_brightness(const led_num_t num, const float32_t duty_cycle)
+{
+    led_status_t status = eLED_OK;
+
+    LED_ASSERT( true == gb_is_init );
+    LED_ASSERT( num < eLED_NUM_OF );
+
+    if ( true == gb_is_init )
+    {
+        if  ( num < eLED_NUM_OF )
+        {
+            g_led[num].max_duty = duty_cycle;
+
+            led_set(num, g_led[num].state); // Update brigthness if already turned on
+        }
+        else
+        {
+            status = eLED_ERROR;
+        }
+    }
+    else
+    {
+        status = eLED_ERROR_INIT;
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Set LED brightness (duty cycle) when turned off   
+*
+* @param[in]    num         - LED number
+* @param[in]    duty_cycle  - Duty cycle [%], range: 0% - 100%
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_set_off_brightness(const led_num_t num, const float32_t duty_cycle)
+{
+    led_status_t status = eLED_OK;
+
+    LED_ASSERT( true == gb_is_init );
+    LED_ASSERT( num < eLED_NUM_OF );
+
+    if ( true == gb_is_init )
+    {
+        if  ( num < eLED_NUM_OF )
+        {
+            g_led[num].min_duty = duty_cycle;
+
+            led_set(num, g_led[num].state); // Update brigthness if already turned off
+        }
+        else
+        {
+            status = eLED_ERROR;
+        }
+    }
+    else
+    {
+        status = eLED_ERROR_INIT;
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Get current LED brightness (duty cycle)
+*
+* @note  When return value is 0%, that means that LED is fully turned OFF.
+*
+* @param[in]    num         - LED number
+* @param[in]    duty_cycle  - Duty cycle [%], range: 0% - 100%
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+led_status_t led_get_duty(const led_num_t num, float32_t * const p_duty_cycle)
+{
+    led_status_t status = eLED_OK;
+
+    LED_ASSERT( true == gb_is_init );
+    LED_ASSERT( num < eLED_NUM_OF );
+    LED_ASSERT( NULL != p_duty_cycle );
+
+    if ( true == gb_is_init )
+    {
+        if  (   ( num < eLED_NUM_OF )
+            &&  ( NULL != p_duty_cycle ))
+        {
+            *p_duty_cycle = g_led[num].duty;
+        }
+        else
+        {
+            status = eLED_ERROR;
+        }
+    }
+    else
+    {
+        status = eLED_ERROR_INIT;
+    }
+
+    return status;    
+}
+
 #if ( 1 == LED_CFG_TIMER_USE_EN )
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -989,6 +1147,8 @@ led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
         {
             if ( num < eLED_NUM_OF )
             {
+                g_led[num].state = state;
+
                 if ( eLED_ON == state )
                 {
                     g_led[num].mode = eLED_MODE_FADE_IN;
@@ -1086,10 +1246,18 @@ led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
                 &&  ( NULL != p_fade_cfg )
                 &&  ( eLED_MODE_NORMAL == g_led[num].mode ))
             {
+                const bool should_update = (p_fade_cfg->max_duty != g_led[num].max_duty) || (p_fade_cfg->min_duty != g_led[num].min_duty);
+
                 g_led[num].max_duty         = p_fade_cfg->max_duty;
-                g_led[num].fade_in_k        = (float32_t) ( 2.0f * g_led[num].max_duty / ( p_fade_cfg->fade_in_time * p_fade_cfg->fade_in_time ));
-                g_led[num].fade_out_k       = (float32_t) ( 2.0f * g_led[num].max_duty / ( p_fade_cfg->fade_out_time * p_fade_cfg->fade_out_time ));
+                g_led[num].min_duty         = p_fade_cfg->min_duty;
+                g_led[num].fade_in_k        = (float32_t) ( 2.0f * ( g_led[num].max_duty - g_led[num].min_duty ) / ( p_fade_cfg->fade_in_time * p_fade_cfg->fade_in_time ));
+                g_led[num].fade_out_k       = (float32_t) ( 2.0f * ( g_led[num].max_duty - g_led[num].min_duty ) / ( p_fade_cfg->fade_out_time * p_fade_cfg->fade_out_time ));
                 g_led[num].fade_out_time    = p_fade_cfg->fade_out_time;
+                
+                if (should_update)
+                {
+                    led_set_smooth(num, g_led[num].state); // Update brigthness
+                }
             }
             else
             {
@@ -1102,6 +1270,22 @@ led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle)
         }
 
         return status;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+    *       Is LED in smooth blink mode
+    *
+    * @param[in]    num - LED number
+    * @return       true in smooth blink mode
+    */
+    ////////////////////////////////////////////////////////////////////////////////
+    bool led_is_in_smooth_blink_mode(const led_num_t num)
+    {
+        LED_ASSERT( true == gb_is_init );
+        LED_ASSERT( num < eLED_NUM_OF );
+
+        return ( eLED_MODE_FADE_BLINK == g_led[num].mode );      
     }
 
 #endif

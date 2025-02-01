@@ -51,30 +51,35 @@ timer_status_t timer_pwm_set  	(const timer_ch_t tim_ch, const float32_t duty);
 In order to be part of *General Embedded C Libraries Ecosystem* this module must be placed in following path: 
 
 ```
-root/middleware/cli/cli/"module_space"
+root/drivers/hmi/led/led/"module_space"
 ```
 
  ## **API**
 ---
 | API Functions | Description | Prototype |
 | --- | ----------- | ----- |
-| **led_init** 				| Initialization of LED 		| led_status_t led_init(void) |
-| **led_deinit** 			| De-initialization of LED 		| led_status_t led_init(void) |
-| **led_is_init** 			| Get initialization flag 		| led_status_t 	led_is_init(bool * const p_is_init) |
-| **led_hndl** 				| Main LED handler 				| led_status_t led_hndl(void) |
-| **led_set** 				| Set LED state 				| led_status_t led_set(const led_num_t num, const led_state_t state) |
-| **led_toggle** 			| Toggle LED state 				| led_status_t led_toggle(const led_num_t num) |
-| **led_blink** 			| Blink LED 					| led_status_t led_blink(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink |
-| **led_get_active_time** 	| Get LED ON time 				| led_status_t led_get_active_time(const led_num_t num, float32_t * const p_active_time) |
-| **led_is_idle** 			| Id LED in idle state			| led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle) |
-
+| **led_init** 				    | Initialization of LED 		            | led_status_t led_init(void) |
+| **led_deinit** 			    | De-initialization of LED 		            | led_status_t led_init(void) |
+| **led_is_init** 			    | Get initialization flag 		            | led_status_t 	led_is_init(bool * const p_is_init) |
+| **led_hndl** 				    | Main LED handler 				            | led_status_t led_hndl(void) |
+| **led_set** 				    | Set LED state 				            | led_status_t led_set(const led_num_t num, const led_state_t state) |
+| **led_set_full** 		        | Set LED state to either 0% or 100% 		| led_status_t led_set_full(const led_num_t num, const led_state_t state) |
+| **led_toggle** 			    | Toggle LED state 				            | led_status_t led_toggle(const led_num_t num) |
+| **led_blink** 			    | Blink LED 					            | led_status_t led_blink(const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink |
+| **led_get_active_time** 	    | Get LED ON time 				            | led_status_t led_get_active_time(const led_num_t num, float32_t * const p_active_time) |
+| **led_is_idle** 			    | Is LED in idle state			            | led_status_t led_is_idle(const led_num_t num, bool * const p_is_idle) |
+| **led_is_on** 			    | Is LED in turned ON		                | led_status_t led_is_on(const led_num_t num, bool *const p_is_on) |
+| **led_set_on_brightness**     | Set LED ON brightness	(max. duty)         | led_status_t led_set_on_brightness(const led_num_t num, const float32_t duty_cycle) |
+| **led_set_off_brightness**    | Set LED OFF brightness (min. duty)        | led_status_t led_set_off_brightness(const led_num_t num, const float32_t duty_cycle) |
+| **led_get_duty**              | Get LED current duty cycle                | led_status_t led_get_duty(const led_num_t num, float32_t * const p_duty_cycle) |
 
 Enabled only if using timer PWM as low level driver:
 | Fading API Functions | Description | Prototype |
 | --- | ----------- | ----- |
-| **led_set_smooth** 	| Set LED state with fading 		| led_status_t led_set_smooth(const led_num_t num, const led_state_t state) |
-| **led_blink_smooth** 	| Blink LED with fading 			| led_status_t led_blink_smooth (const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink) |
-| **led_set_fade_cfg** 	| Set LED fading configurations 	| led_status_t led_set_fade_cfg	(const led_num_t num, const led_fade_cfg_t * const p_fade_cfg) |
+| **led_set_smooth** 	            | Set LED state with fading 		| led_status_t led_set_smooth(const led_num_t num, const led_state_t state) |
+| **led_blink_smooth** 	            | Blink LED with fading 			| led_status_t led_blink_smooth (const led_num_t num, const float32_t on_time, const float32_t period, const led_blink_t blink) |
+| **led_set_fade_cfg** 	            | Set LED fading configurations 	| led_status_t led_set_fade_cfg	(const led_num_t num, const led_fade_cfg_t * const p_fade_cfg) |
+| **led_is_in_smooth_blink_mode** 	| Is LED in smooth blink mode	    | bool led_is_in_smooth_blink_mode(const led_num_t num) |
 
 ## **How to use**
 ---
@@ -109,7 +114,7 @@ typedef enum
  * 	Main LED handler period
  * 	Unit: sec
  */
-#define LED_CFG_HNDL_PERIOD_S					( 0.01f )
+#define LED_CFG_HNDL_PERIOD_MS					( 0.01f )
 
 /**
  * 	Using timer for driving LED

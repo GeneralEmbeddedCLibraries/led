@@ -1,4 +1,4 @@
-// Copyright (c) 2023 Ziga Miklosic
+// Copyright (c) 2025 Ziga Miklosic
 // All Rights Reserved
 // This software is under MIT licence (https://opensource.org/licenses/MIT)
 ////////////////////////////////////////////////////////////////////////////////
@@ -7,8 +7,8 @@
 * @brief    LED configurations
 * @author   Ziga Miklosic
 * @email    ziga.miklosic@gmail.com
-* @date     08.11.2023
-* @version  V1.1.0
+* @date     01.02.2025
+* @version  V1.2.0
 */
 ////////////////////////////////////////////////////////////////////////////////
 /**
@@ -52,11 +52,16 @@ static const led_cfg_t g_led_cfg[ eLED_NUM_OF ] =
     // USER CODE BEGIN...
 
     // -------------------------------------------------------------------------------------------------------------------------------------------------------
-    //                      Driver type                 LED driver channel                      Initial State               Polarity
+    //  TIEMR DRIVERS       Driver type                     LED Timer                           Initial State               Polarity
     // -------------------------------------------------------------------------------------------------------------------------------------------------------
-    [eLED_STATUS]   =   { .drv_type = eLED_DRV_GPIO,    .drv_ch.gpio_pin = eGPIO_LED_STATUS,        .initial_state = eLED_ON,   .polarity = eLED_POL_ACTIVE_HIGH    },
-    [eLED_ERR_COM]  =   { .drv_type = eLED_DRV_GPIO,    .drv_ch.gpio_pin = eGPIO_LED_ERR_COM,       .initial_state = eLED_ON,   .polarity = eLED_POL_ACTIVE_HIGH    },
+    [eLED_LCD]          = { .drv_type = eLED_DRV_TIMER_PWM, .drv_ch.gpio_pin = eTIMER_CH_LCD,   .initial_state = eLED_OFF,   .polarity = eLED_POL_ACTIVE_HIGH    },
 
+    // -------------------------------------------------------------------------------------------------------------------------------------------------------
+	//  GPIO DRIVERS       Driver type                      LED GPIO                            Initial State               Polarity
+	// -------------------------------------------------------------------------------------------------------------------------------------------------------
+    #ifdef __HW_F9020110_
+        [eLED_DEBUG]    = { .drv_type = eLED_DRV_GPIO,      .drv_ch.gpio_pin = eGPIO_DBG_LED,   .initial_state = eLED_OFF,  .polarity = eLED_POL_ACTIVE_HIGH    },
+    #endif
 
     // USER CODE END...
 
